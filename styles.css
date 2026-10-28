@@ -92,3 +92,9 @@
 @media(max-width:850px){.strategic-section,.strategy-observation,.strategy-action-grid{grid-template-columns:1fr}.strategy-toolbar{flex-wrap:wrap}.strategic-summary{padding:21px}.strategy-action{padding:20px}}
 @media(max-width:540px){.strategic-metrics{grid-template-columns:1fr 1fr}.strategic-metric{padding:11px}.strategic-metric strong{font-size:21px}.strategic-metric span{font-size:10px}.strategy-header h2{font-size:23px}}
 @media print{.strategy-toolbar button,.inspect-link{display:none}.strategic-summary,.strategy-action,.strategic-panel{break-inside:avoid}.strategy-action-grid,.strategic-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.strategic-table-wrap{overflow:visible}}
+
+.strategic-segment-comp{margin:14px 0 20px}
+.strategic-segment-comp .strategy-table{min-width:650px}
+.strategic-segment-comp .strategy-table td:not(:first-child){text-align:right}
+.strategy-segment-insight{margin-top:15px;padding:17px 20px;border-radius:10px;border:1px solid #594a36;background:#29251f;color:#d9dacf;font-size:12px;line-height:1.75}
+.strategy-segment-insight strong{color:#ead1a5}
