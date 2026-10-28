@@ -7,6 +7,7 @@ const fromJSON = path => JSON.parse(readFileSync(new URL(path, import.meta.url),
 const dashboardHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const dashboardCss = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
 const dashboardJs = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+assert.ok(!/BP2027|Business Plan|Diagnóstico estratégico 2027/i.test(dashboardHtml + dashboardJs), 'Dashboard sin referencias al BP2027');
 assert.ok(dashboardHtml.includes('assets/branding/ron-carupano-logo-gold.webp'), 'Official Ron Carúpano signature must be displayed');
 assert.ok(!dashboardHtml.includes('class="symbol"'), 'Old placeholder monogram must not appear');
 assert.ok(dashboardHtml.includes('family=Inter'), 'Inter should load for UI and data');
@@ -28,8 +29,9 @@ assert.equal(metadata.markets.length, 21);
 for (const market of metadata.markets) {
   const output = buildStrategicView(rows, portfolio, market, 'CACIQUE');
   assert.ok(output.html.includes('CAPÍTULO 1 · COMPETIDORES'));
-  assert.ok(output.html.includes('CAPÍTULO 4 · PLAN DE MARKETING 2027'));
+  assert.ok(output.html.includes('CAPÍTULO 4 · PRIORIDADES DE ACTUACIÓN'));
   assert.ok(output.html.includes('Qué sabemos'));
+  assert.ok(!/BP2027|Business Plan|Plan de Marketing 2027/i.test(output.html + output.brief), 'Sin referencias al BP2027');
   assert.ok(output.html.includes('Qué datos necesitamos'));
   assert.ok(output.html.includes('2025 completo') || output.html.includes('2025'));
   assert.equal(output.charts.length, 3, 'Tres gráficos estratégicos');
@@ -49,4 +51,4 @@ assert.ok(national.html.includes('Cambio Santa Teresa'), 'Matriz competitiva por
 assert.ok(national.html.includes('2026 hasta septiembre'));
 assert.ok(national.brief.includes('No se puede atribuir la cuota ganada por una marca a otra'));
 assert.ok(national.brief.includes('Capital autoservicios'));
-console.log('Strategic insights: 21 markets, 3 charts and 4 BP2027 actions validated.');
+console.log('Strategic insights: 21 markets, 3 charts and 4 data-driven actions validated.');
