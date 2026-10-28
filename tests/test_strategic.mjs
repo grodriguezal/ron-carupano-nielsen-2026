@@ -30,6 +30,8 @@ assert.ok(national.html.includes('59,13 %'), 'Participación Santa Teresa');
 assert.ok(national.html.includes('8,11 %'), 'Participación Carúpano');
 assert.ok(national.html.includes('14,03 %'), 'Participación Cacique');
 assert.ok(national.html.includes('puntos porcentuales'));
+assert.ok(national.html.includes('+4,68 puntos porcentuales'), 'Cambio en la contribución STANDARD de Santa Teresa');
+assert.ok(national.html.includes('Cambio Santa Teresa'), 'Matriz competitiva por segmento');
 assert.ok(national.html.includes('2026 hasta septiembre'));
 assert.ok(national.brief.includes('No se puede atribuir la cuota ganada por una marca a otra'));
 assert.ok(national.brief.includes('Capital autoservicios'));
