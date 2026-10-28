@@ -30,6 +30,7 @@ Abrir `http://localhost:8000`. La interfaz utiliza ECharts a través de CDN. Git
 Al abrir la página se muestra un resumen de Ron Carúpano. Cada una de las siete secciones empieza por **qué muestran las cifras, qué significan y qué conviene investigar o hacer**. Debajo de cada gráfico hay una guía para interpretarlo. En la parte superior aparece **«¿No conoces Nielsen ni el sector? Empieza aquí»**, que explica términos con ejemplos.
 
 - **Resumen ejecutivo:** descubre la situación de la marca y los cambios de participación.
+- **Diagnóstico estratégico 2027:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones posibles para el Business Plan.
 - **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
 - **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
 - **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.
@@ -38,6 +39,30 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada una de las siet
 - **Escenarios 2027:** prueba metas hipotéticas, sin confundirlas con predicciones.
 
 **Regla editorial:** el relato se divide en dato observado, interpretación prudente y acción por investigar. No se presenta una correlación como prueba de causalidad. Los cambios entre porcentajes se escriben en palabras completas («puntos porcentuales») y se señala que 2025 y 2026 no son períodos de igual duración.
+
+## Nueva sección: Diagnóstico estratégico 2027
+
+La sección **Diagnóstico estratégico 2027** transforma las métricas NielsenIQ en una narrativa ejecutiva organizada por cuatro capítulos:
+
+1. **Competidores:** cuánto cambia la participación de Carúpano, Santa Teresa y Cacique y cómo evoluciona la distancia de participación; sin atribuir automáticamente las ganancias de una marca a las pérdidas de otra.
+2. **Canales y regiones:** comparación visual de los cambios de participación y tabla interactiva para explorar cada corte, sin sumar mercados superpuestos.
+3. **Productos y posicionamiento:** contribución de los segmentos de Carúpano al total de ron vendido y advertencias sobre cambios de clasificación, mezcla y formatos.
+4. **Plan 2027:** cuatro propuestas diferenciadas, con hallazgo medido, significado, acción, indicador de seguimiento, información interna faltante y responsables sugeridos.
+
+**Casos comerciales prioritarios para estudiar:** autoservicios de Capital (pérdida simultánea de cuota y cobertura), licorerías (mejora de distribución numérica y caída de participación), canal tradicional de Centro + Centro Occidente (participación creciente) y contribución del portafolio de segmentos premium.
+
+La explicación del módulo se recalcula al cambiar de mercado desde el filtro superior. Los botones **Analizar mercado** de la tabla modifican el mercado seleccionado y muestran su diagnóstico. El botón **Copiar resumen para el comité** copia una síntesis editable de los resultados y recomendaciones.
+
+Este material distingue cuidadosamente entre observaciones, hipótesis de negocio y acciones recomendadas. **No demuestra efectos causales, retorno de inversión, ventas absolutas ni transferencia directa de cuota entre marcas.** Todas las comparaciones entre el año completo 2025 y 2026 acumulado a septiembre advierten la diferencia temporal.
+
+### Validación técnica
+
+```bash
+npm test
+python tests/test_data.py
+```
+
+El paquete JavaScript no necesita dependencias instaladas. Las pruebas de la sección estratégica comprueban los 21 cortes de mercado, las tres visualizaciones, la presencia de las cuatro acciones BP2027 y las referencias numéricas nacionales. GitHub Actions ejecuta las comprobaciones en cada actualización de `main`.
 
 ## Precauciones metodológicas
 
