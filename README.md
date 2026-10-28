@@ -79,7 +79,7 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 - **Estructura del mercado:** descubre el peso de cada segmento en el mercado total.
 - **Competencia por segmento:** compara cuotas dentro de Standard, Premium, Super Premium y otras clasificaciones.
 - **Índice valor/volumen:** compara un índice construido por el dashboard con los porcentajes en valor y volumen medidos por NielsenIQ; no es una métrica entregada directamente por NielsenIQ.
-- **Diagnóstico de distribución:** identifica señales al cruzar presencia y cuota.
+- **Diagnóstico de distribución:** identifica señales al cruzar presencia y cuota. Ahora distingue distribución numérica de ponderada y propone comprobaciones distintas cuando cambian en sentidos opuestos.
 - **Movimientos competitivos:** rastrea ganancias y pérdidas de participación por marca.
 - **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
 - **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.

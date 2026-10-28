@@ -129,24 +129,44 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
  };
  const buildDistribution=()=>{
   const allMarkets=[...new Set(rows.map(r=>r.market))];
-  const arr=allMarkets.map(m=>{const r=rows.find(x=>x.market===m&&x.brand===focusBrand);return {market:m,record:r,share:delta(r,"value"),numeric:delta(r,"numeric_distribution"),weighted:delta(r,"weighted_distribution"),current:value(r)};}).filter(x=>x.record&&x.share!=null&&x.numeric!=null);
-  const classify=x=>x.share<-.005&&x.numeric<-.005?"Caen participación y presencia":x.share<-.005&&x.numeric>.005?"Más tiendas, menor cuota":x.share>.005&&x.numeric<-.005?"Menos tiendas, más cuota":x.share>.005&&x.numeric>.005?"Mejoran ambas":"Señales mixtas o estables";
-  const breakdown=arr.reduce((o,x)=>(o[classify(x)]=(o[classify(x)]||0)+1,o),{});
-  const twoDown=arr.filter(x=>classify(x)==="Caen participación y presencia").sort((a,b)=>a.share-b.share);
-  const mixed=arr.filter(x=>classify(x)==="Más tiendas, menor cuota").sort((a,b)=>a.share-b.share);
-  const tableRows=arr.slice().sort((a,b)=>a.share-b.share).map(x=>`<tr><td><strong>${esc(label(x.market))}</strong><small>${esc(x.market.startsWith("T ")?"Corte especial de alimentos":"Corte de canal o mercado")}</small></td><td>${fmt(x.current)} %</td><td class="${col(x.share)}">${smallDelta(x.share)}</td><td class="${col(x.numeric)}">${smallDelta(x.numeric)}</td><td class="${col(x.weighted)}">${smallDelta(x.weighted)}</td><td>${esc(classify(x))}</td></tr>`);
-  const intro=narr(`¿La presencia en tiendas explica los movimientos de ${esc(focusBrand)}?`,
-   `En ${arr.length} mercados con datos comparables de la marca, ${twoDown.length} muestran menor participación y menor presencia numérica; ${mixed.length} muestran más establecimientos pero menor participación.`,
-   `Son señales comerciales, no pruebas de causalidad. La distribución numérica cuenta establecimientos y la ponderada tiene en cuenta su relevancia para las ventas de ron. La cuota, por otro lado, representa ventas relativas.`,
-   `Investigar primero dónde coinciden señales, pero sin inferir valor económico: el peso comercial, tamaño total y solapamiento de cada mercado no están disponibles en esta base.`);
-  const stats=statRow([stat("Mercados con datos",String(arr.length),"Incluye cortes que pueden solaparse"),stat("Cuota y presencia bajan",String(twoDown.length),"Revisar cobertura y disponibilidad"),stat("Más tiendas, menor cuota",String(mixed.length),"Revisar peso de tiendas y ejecución"),stat("Mercados con ambas al alza",String(breakdown["Mejoran ambas"]||0),"Estudiar qué prácticas funcionan")]);
-  const html=controls(["brand"])+intro+stats+`<div class="grid2 mi-grid">${panel("miDistributionQuadrants","Cuatro tipos de señales","Eje horizontal: cambio de presencia en tiendas. Eje vertical: cambio de cuota en valor. Cada punto es un corte de mercado.")}${panel("miDistributionChanges","Dónde es mayor el retroceso de participación","Mercados ordenados por diferencia de cuota de la marca seleccionada. No equivale a ordenarlos por ventas.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Diagnóstico de todos los mercados</h2><p>Compara cuota de valor, presencia numérica y ponderada con una clasificación descriptiva.</p></div></div>${tbl(["Mercado","Cuota 2026","Cambio de cuota","Cambio de tiendas","Cambio de presencia ponderada","Lectura"],tableRows)}</section>`+disclaimer;
+  const arr=allMarkets.map(m=>{const r=rows.find(x=>x.market===m&&x.brand===focusBrand);return {market:m,record:r,share:delta(r,"value"),numeric:delta(r,"numeric_distribution"),weighted:delta(r,"weighted_distribution"),current:value(r)};}).filter(x=>x.record&&x.share!=null&&x.numeric!=null&&x.weighted!=null);
+  const sg=x=>x>0.005?1:x<-.005?-1:0;
+  const classify=x=>{
+   const n=sg(x.numeric),w=sg(x.weighted);
+   if(n>0&&w<0)return "Más tiendas, menor peso comercial";
+   if(n<0&&w>0)return "Menos tiendas, mayor peso comercial";
+   if(n<0&&w<0)return "Retroceden ambas distribuciones";
+   if(n>0&&w>0)return "Mejoran ambas distribuciones";
+   if(n<0)return "Menor distribución numérica";
+   if(w<0)return "Menor distribución ponderada";
+   return "Señales estables o favorables";
+  };
+  const next=x=>{
+   const n=sg(x.numeric),w=sg(x.weighted);
+   if(n>0&&w<0)return "Comparar nuevas tiendas con su peso comercial, inventario y surtido; no priorizar solo aperturas.";
+   if(n<0&&w>0)return "Identificar establecimientos perdidos y cuentas que explican el aumento ponderado.";
+   if(n<0&&w<0)return "Auditar listados, cobertura y establecimientos relevantes sin dar por probada una falta de stock.";
+   if(n>0&&w>0)return "Validar qué clientes explican la mejora y contrastarla con la cuota en valor.";
+   if(n<0)return "Comprobar bajas de tiendas y su importancia comercial.";
+   if(w<0)return "Revisar el peso de las tiendas con presencia y su evolución.";
+   return "Seguir inventario, cuota de mercado y ejecución comercial.";
+  };
+  const negativeAll=arr.filter(x=>sg(x.share)<0&&sg(x.numeric)<0&&sg(x.weighted)<0);
+  const opposite=arr.filter(x=>sg(x.numeric)*sg(x.weighted)===-1);
+  const moreStoresLessWeight=arr.filter(x=>sg(x.numeric)>0&&sg(x.weighted)<0);
+  const tableRows=arr.slice().sort((a,b)=>a.share-b.share).map(x=>`<tr><td><strong>${esc(label(x.market))}</strong><small>${esc(x.market.startsWith("T ")?"Corte especial de alimentos":"Corte de canal o mercado")}</small></td><td>${fmt(x.current)} %</td><td class="${col(x.share)}">${smallDelta(x.share)}</td><td class="${col(x.numeric)}">${smallDelta(x.numeric)}</td><td class="${col(x.weighted)}">${smallDelta(x.weighted)}</td><td><strong>${esc(classify(x))}</strong></td><td>${esc(next(x))}</td></tr>`);
+  const intro=narr(`¿Qué nos dicen ambas distribuciones sobre ${esc(focusBrand)}?`,
+   `En ${arr.length} cortes con datos, ${negativeAll.length} muestran caída de cuota en valor y de ambas distribuciones; ${opposite.length} tienen señales de distribución opuestas. En ${moreStoresLessWeight.length}, la marca aparece en más tiendas pero pierde peso comercial ponderado.`,
+   `La distribución numérica mide establecimientos con presencia; la ponderada, el peso de categoría de esas tiendas. Son indicadores diferentes y pueden evolucionar en sentidos opuestos. Las variaciones de cuota en valor tampoco demuestran causas.`,
+   `Revisar altas y bajas por establecimiento, peso comercial de las cuentas, disponibilidad y surtido. Los cortes pueden solaparse y no deben agregarse para estimar ventas o impacto económico.`);
+  const stats=statRow([stat("Cortes con datos",String(arr.length),"Universos que pueden solaparse"),stat("Cuota y ambas distribuciones bajan",String(negativeAll.length),"Tres señales que coinciden"),stat("Distribuciones con signos opuestos",String(opposite.length),"Revisar composición de las cuentas"),stat("Más tiendas, menor peso ponderado",String(moreStoresLessWeight.length),"Priorizar relevancia comercial")]);
+  const html=controls(["brand"])+intro+stats+`<div class="grid2 mi-grid">${panel("miDistributionQuadrants","Numérica frente a ponderada","Cada punto es un corte: derecha = más distribución numérica; arriba = mayor ponderada. Son cambios en puntos porcentuales, no cuotas de ventas.")}${panel("miDistributionChanges","Dónde retrocede la cuota en valor","Cambio de participación de la marca, separado de los cambios de distribución. No son ventas absolutas.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Qué significa cada combinación de señales</h2><p>La tabla diferencia cobertura numérica, peso comercial de tiendas y cuota en valor. La última columna propone verificaciones, no causas demostradas.</p></div></div>${tbl(["Mercado","Cuota en valor 2026","Δ cuota","Δ distrib. numérica","Δ distrib. ponderada","Lectura","Qué investigar"],tableRows)}</section>`+disclaimer;
   const low=arr.slice().sort((a,b)=>a.share-b.share).slice(0,12).reverse();
   const charts=[
-    chart("miDistributionQuadrants",{tooltip:{trigger:"item",formatter:p=>`${esc(p.data.name)}: cambio de tiendas ${smallDelta(p.value[0])}; cambio de cuota ${smallDelta(p.value[1])}`},grid:{left:60,right:30,top:22,bottom:48},xAxis:{type:"value",name:"Cambio de presencia en tiendas",nameLocation:"middle",nameGap:30,...ax},yAxis:{type:"value",name:"Cambio de participación",nameLocation:"middle",nameGap:40,...ax},series:[{type:"scatter",symbolSize:13,markLine:{silent:true,symbol:"none",lineStyle:{color:"#53605a",type:"dashed"},label:{show:false},data:[{xAxis:0},{yAxis:0}]},data:arr.map(x=>({name:label(x.market),value:[x.numeric,x.share],itemStyle:{color:x.share<0&&x.numeric<0?colors.bad:x.share>0&&x.numeric>0?colors.good:colors.car}}))}]}),
-    chart("miDistributionChanges",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v)+" puntos"},grid:{left:176,right:18,top:10,bottom:30},xAxis:{type:"value",...ax},yAxis:{type:"category",data:low.map(x=>label(x.market)),...ax,axisLabel:{color:"#bdc9bd",fontSize:10}},series:[{type:"bar",barMaxWidth:17,data:low.map(x=>({value:x.share,itemStyle:{color:x.share<0?colors.bad:colors.good}}))}]})
+   chart("miDistributionQuadrants",{tooltip:{trigger:"item",formatter:p=>`${esc(p.data.name)}: distribución numérica ${smallDelta(p.value[0])}; ponderada ${smallDelta(p.value[1])}; cuota en valor ${smallDelta(p.data.share)}`},grid:{left:66,right:28,top:15,bottom:52},xAxis:{type:"value",name:"Cambio de distribución numérica (pp)",nameLocation:"middle",nameGap:30,...ax},yAxis:{type:"value",name:"Cambio ponderada (pp)",nameLocation:"middle",nameGap:42,...ax},series:[{type:"scatter",symbolSize:13,markLine:{silent:true,symbol:"none",lineStyle:{color:"#53605a",type:"dashed"},label:{show:false},data:[{xAxis:0},{yAxis:0}]},data:arr.map(x=>({name:label(x.market),share:x.share,value:[x.numeric,x.weighted],itemStyle:{color:sg(x.numeric)*sg(x.weighted)===-1?colors.car:sg(x.numeric)<0&&sg(x.weighted)<0?colors.bad:colors.good}}))}]}),
+   chart("miDistributionChanges",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v)+" puntos"},grid:{left:176,right:18,top:10,bottom:30},xAxis:{type:"value",...ax},yAxis:{type:"category",data:low.map(x=>label(x.market)),...ax,axisLabel:{color:"#bdc9bd",fontSize:10}},series:[{type:"bar",barMaxWidth:17,data:low.map(x=>({value:x.share,itemStyle:{color:x.share<0?colors.bad:colors.good}}))}]})
   ];
-  return {html,charts,meta:{marketCount:arr.length,negativeBoth:twoDown.length,mixed:mixed.length}};
+  return {html,charts,meta:{marketCount:arr.length,negativeBoth:negativeAll.length,mixed:opposite.length,moreStoresLessWeight:moreStoresLessWeight.length}};
  };
  const buildMovements=()=>{
   const all=allMarket.filter(r=>value(r)!=null&&value(r,"value",P0)!=null);

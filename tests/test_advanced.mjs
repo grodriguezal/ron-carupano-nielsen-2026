@@ -36,7 +36,13 @@ assert.ok(value.html.includes('No equivale a un precio de venta'));
 
 const distribution=buildAdvancedView(rows,portfolio,'distributionMatrix',nation);
 assert.equal(distribution.meta.marketCount,21);
-assert.equal(distribution.meta.negativeBoth,12);
+assert.equal(distribution.meta.negativeBoth,10,'Cuota y ambas distribuciones caen en diez cortes');
+assert.equal(distribution.meta.mixed,3,'Tres cortes con signos opuestos en las distribuciones');
+assert.equal(distribution.meta.moreStoresLessWeight,1,'Un corte con más tiendas y menor presencia ponderada');
+assert.ok(distribution.html.includes('Distribuciones con signos opuestos'));
+assert.ok(distribution.html.includes('Qué investigar'));
+assert.ok(distribution.html.includes('Más tiendas, menor peso comercial'));
+assert.ok(distribution.charts[0].option.yAxis.name.includes('ponderada'));
 assert.throws(()=>buildAdvancedView(rows,portfolio,'formats',nation,'STANDARD'),/Dashboard no reconocido/,'Retired formats dashboard must be unavailable');
 const movement=buildAdvancedView(rows,portfolio,'movements',nation);
 assert.equal(movement.meta.largestGainer,'SANTA TERESA');
