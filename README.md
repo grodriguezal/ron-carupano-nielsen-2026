@@ -2,7 +2,7 @@
 
 **NielsenIQ · Ron Venezuela · 2025 completo / 2026 YTD septiembre**
 
-Dashboard de inteligencia competitiva para Ron Carúpano: **Executive Center, Competidores, Canales, Distribución, Portafolio, Opportunity Radar y Strategy Lab**.
+Dashboard de inteligencia competitiva para Ron Carúpano: **Resumen ejecutivo, Diagnóstico estratégico 2027, Competidores, Competencia por región, Canales, Distribución, Portafolio y Oportunidades de mejora**.
 
 ## Datos
 
@@ -27,18 +27,57 @@ Abrir `http://localhost:8000`. La interfaz utiliza ECharts a través de CDN. Git
 
 ## Cómo utilizar el dashboard (no hace falta saber Nielsen)
 
-Al abrir la página se muestra un resumen de Ron Carúpano. Cada una de las siete secciones empieza por **qué muestran las cifras, qué significan y qué conviene investigar o hacer**. Debajo de cada gráfico hay una guía para interpretarlo. En la parte superior aparece **«¿No conoces Nielsen ni el sector? Empieza aquí»**, que explica términos con ejemplos.
+Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empieza por **qué muestran las cifras, qué significan y qué conviene investigar o hacer**. Debajo de cada gráfico hay una guía para interpretarlo. En la parte superior aparece **«¿No conoces Nielsen ni el sector? Empieza aquí»**, que explica términos con ejemplos.
 
 - **Resumen ejecutivo:** descubre la situación de la marca y los cambios de participación.
 - **Diagnóstico estratégico 2027:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones posibles para el Business Plan.
 - **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
+- **Competencia por región:** identifica los cinco principales competidores de cada región, ciudad o canal incluido en Nielsen, junto con los resultados de Carúpano.
 - **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
 - **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.
 - **Productos y formatos:** analiza qué aporta cada segmento del portafolio al mercado.
 - **Oportunidades de mejora:** interpreta señales automáticas y los siguientes pasos de investigación.
-- **Escenarios 2027:** prueba metas hipotéticas, sin confundirlas con predicciones.
 
 **Regla editorial:** el relato se divide en dato observado, interpretación prudente y acción por investigar. No se presenta una correlación como prueba de causalidad. Los cambios entre porcentajes se escriben en palabras completas («puntos porcentuales») y se señala que 2025 y 2026 no son períodos de igual duración.
+
+## Comparador de los cinco principales competidores por región
+
+La sección **Competencia por región** muestra la posición de Carúpano frente a las cinco marcas competidoras con mayor participación de mercado en **valor** en cada corte (2026 hasta septiembre). Carúpano siempre aparece como referencia, aunque no figure entre las cinco competidoras. Para cada zona:
+
+- Ranking y participación de Carúpano, con su posición en el mercado.
+- Comparación en valor, volumen, distribución numérica y distribución ponderada con las cinco marcas competidoras.
+- Diferencia respecto al líder y cambio de participación frente al año completo 2025, expresados en puntos porcentuales.
+- Dos gráficos: participación actual y variaciones de participación.
+- Tabla de los ocho cortes principales (Capital, Andes y Occidente, Centro y Centro Occidente, Oriente; cada uno separado por autoservicios y canal tradicional).
+- Tabla adicional con los siete cortes especiales de alimentos, incluidos **Caracas, Maracaibo y Valencia** y otras agrupaciones.
+- Explicaciones dinámicas sobre posiciones, tendencias, señales y limitaciones de cada mercado.
+
+**Importante:** el corte `T Caracas Alimentos_Abs` no es todo el mercado de Caracas. La nomenclatura procede del archivo de NielsenIQ y representa solo el universo de medición correspondiente al corte especial de alimentos. Capital no debe tratarse automáticamente como sinónimo de la ciudad de Caracas. No se agregan regiones ni canales solapados ni se convierten participaciones relativas en ventas absolutas.
+
+Desde el capítulo de canales del **Diagnóstico estratégico 2027** se puede acceder mediante el botón **Ver 5 rivales**. El comparador permite cambiar de mercado sin salir de la sección.
+
+## Corrección de la conciliación del portafolio
+
+La tarjeta antigua «Diferencia frente al total de Carúpano» mostraba números como «0,0000 puntos porcentuales» acompañados de «Sin comparación», una lectura engañosa. Ahora se muestra:
+
+- **✓ Sí, coincide** cuando la suma de las contribuciones por segmento concuerda con la participación total de Carúpano con una tolerancia de 0,0005 puntos para contemplar el redondeo de valores de origen.
+- **Revisar datos** si la diferencia supera ese límite; en tal caso no se atribuye automáticamente a redondeos.
+- **Sin datos** cuando no es posible comprobar la conciliación.
+
+En los 21 mercados actuales la diferencia observada se mantiene dentro del margen y no representa ninguna caída comercial.
+
+## Cambios de navegación
+
+Se ha **retirado completamente el módulo de escenarios hipotéticos 2027**, tanto de la navegación como de la lógica y el código de simulación. Se mantiene el **Diagnóstico estratégico 2027**, que relaciona hallazgos reales de NielsenIQ con acciones para el Business Plan sin construir pronósticos no fundamentados.
+
+### Validación de la comparación regional
+
+```bash
+npm test
+python tests/test_data.py
+```
+
+Las pruebas verifican los 15 cortes regionales y especiales, la selección correcta de los cinco competidores (sin incluir Carúpano entre ellos), el acceso a la vista regional, la ausencia del módulo de escenarios y la conciliación del portafolio.
 
 ## Nueva sección: Diagnóstico estratégico 2027
 
