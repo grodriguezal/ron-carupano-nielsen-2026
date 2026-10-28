@@ -44,7 +44,7 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada una de las siet
 
 La sección **Diagnóstico estratégico 2027** transforma las métricas NielsenIQ en una narrativa ejecutiva organizada por cuatro capítulos:
 
-1. **Competidores:** cuánto cambia la participación de Carúpano, Santa Teresa y Cacique y cómo evoluciona la distancia de participación; sin atribuir automáticamente las ganancias de una marca a las pérdidas de otra.
+1. **Competidores:** cuánto cambia la participación de Carúpano, Santa Teresa y Cacique, cómo evoluciona la distancia y qué segmentos explican matemáticamente los cambios de cuota (por ejemplo, el aumento del segmento STANDARD de Santa Teresa); sin atribuir automáticamente las ganancias de una marca a las pérdidas de otra.
 2. **Canales y regiones:** comparación visual de los cambios de participación y tabla interactiva para explorar cada corte, sin sumar mercados superpuestos.
 3. **Productos y posicionamiento:** contribución de los segmentos de Carúpano al total de ron vendido y advertencias sobre cambios de clasificación, mezcla y formatos.
 4. **Plan 2027:** cuatro propuestas diferenciadas, con hallazgo medido, significado, acción, indicador de seguimiento, información interna faltante y responsables sugeridos.
