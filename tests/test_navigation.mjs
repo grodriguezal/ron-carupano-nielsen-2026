@@ -9,10 +9,12 @@ const strategic=read('strategic-intelligence.js');
 const regional=read('regional-intelligence.js');
 const advanced=read('advanced-intelligence.js');
 const navPages=[...page.matchAll(/class="nav-button[^"]*"\s+data-page="([^"]+)"/g)].map(x=>x[1]);
-assert.equal(navPages.length,14,'All fourteen navigation sections must be present');
+assert.equal(navPages.length,13,'All thirteen navigation sections must be present');
 assert.ok(navPages.includes('regional'),'Regional intelligence must be in the menu');
-for(const page of ['segments','premium','value','distributionMatrix','formats','movements'])assert.ok(navPages.includes(page),'Missing advanced navigation: '+page);
+for(const page of ['segments','premium','value','distributionMatrix','movements'])assert.ok(navPages.includes(page),'Missing advanced navigation: '+page);
 assert.ok(!navPages.includes('strategy'),'Retired scenarios must not reappear');
+assert.ok(!navPages.includes('formats'),'Retired formats dashboard must not appear in navigation');
+assert.ok(!app.includes('formats:advancedPage'),'Retired formats route must not remain');
 assert.ok(page.includes('app.js?v='),'Versioned app.js required to prevent stale menu and code');
 assert.ok(app.includes('regional-intelligence.js?v='),'Versioned regional module import required');
 assert.ok(app.includes('advanced-intelligence.js?v='),'Versioned advanced module import required');
@@ -61,7 +63,7 @@ await context.__loaded;
 
 assert.equal(context.__state.rows.length,779);
 assert.equal(events.size>=navPages.length,true,'Navigation must register click listeners');
-for(const target of ['regional','segments','premium','value','distributionMatrix','formats','movements','competition','strategic','overview']){
+for(const target of ['regional','segments','premium','value','distributionMatrix','movements','competition','strategic','overview']){
  const onClick=events.get('nav:'+target+':click');
  assert.equal(typeof onClick,'function','Click listener missing: '+target);
  onClick();
@@ -81,4 +83,8 @@ window.location.hash='#regional';
 events.get('window:hashchange')();
 assert.equal(context.__state.page,'regional');
 assert.ok(element('view').innerHTML.includes('INTELIGENCIA COMPETITIVA GEOGRÁFICA'));
-console.log('Navigation passed: 14 sections, six advanced dashboards, regional routing and deep links.');
+window.location.hash='#formats';
+events.get('window:hashchange')();
+assert.equal(context.__state.page,'overview','Old formats links must redirect to executive overview');
+assert.equal(window.location.hash,'overview');
+console.log('Navigation passed: 13 sections, five advanced dashboards, regional routing and deep links.');
