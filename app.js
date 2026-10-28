@@ -185,6 +185,16 @@ function strategic(){
  const report=buildStrategicView(state.rows,state.portfolio,state.market,state.competitor);
  $('view').innerHTML=report.html;
  for(const c of report.charts){chart(c.id,c.option);}
+ document.querySelectorAll('#view [data-inspect-market]').forEach(button=>{
+   button.addEventListener('click',()=>{
+     const chosen=button.dataset.inspectMarket;
+     if(!chosen)return;
+     state.market=chosen;
+     $('marketSelect').value=chosen;
+     render();
+     window.scrollTo({top:0,behavior:'smooth'});
+   });
+ });
  const b=$('copyStrategyBrief');
  if(b)b.addEventListener('click',async ()=>{
   try{
