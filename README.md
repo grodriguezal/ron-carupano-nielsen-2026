@@ -64,6 +64,15 @@ python tests/test_data.py
 
 El paquete JavaScript no necesita dependencias instaladas. Las pruebas de la sección estratégica comprueban los 21 cortes de mercado, las tres visualizaciones, la presencia de las cuatro acciones BP2027 y las referencias numéricas nacionales. GitHub Actions ejecuta las comprobaciones en cada actualización de `main`.
 
+
+## Identidad visual oficial
+
+El menú lateral utiliza el **logotipo original dorado horizontal** de Ron Carúpano, obtenido directamente del repositorio del [Brand Hub](https://grodriguezal.github.io/ron-carupano-brand-hub/). Está incluido sin alteraciones en `assets/branding/ron-carupano-logo-gold.webp`. También se conserva la versión negra vertical, para fondos claros, en `assets/branding/ron-carupano-logo-black-vertical.webp`.
+
+**Tipografía de marca:** Adobe Garamond Pro para titulares expresivos y **Inter** para navegación, tablas, explicaciones, controles y cifras. Inter se carga con Google Fonts. Adobe Garamond Pro está declarada en la pila CSS como familia prioritaria; **en los equipos que no tengan instalada una copia licenciada se utiliza Garamond/Georgia como respaldo**. Para obtener Adobe Garamond Pro idéntica en todos los navegadores hace falta configurar una licencia de uso web y servirla a través de Adobe Fonts o un proveedor autorizado. No se redistribuye el archivo propietario de la tipografía.
+
+Los colores de acento siguen el Brand Hub: dorado principal de referencia `#84754e` y dorado claro `#c5b783`, este último empleado para texto y gráficos sobre el fondo oscuro.
+
 ## Precauciones metodológicas
 
 - **2025 completo y 2026 YTD sep no son periodos comparables para YoY de ventas**. Mostrar diferencias de cuota (pp) con advertencia.
