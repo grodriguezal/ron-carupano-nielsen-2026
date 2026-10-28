@@ -22,6 +22,7 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
     carWithin0:total0>0?carContribution(P0)/total0*100:null,
     carWithin1:total1>0?carContribution(P1)/total1*100:null};
  }).filter(s=>s.records.length>0);
+ if(!segments.some(s=>s.name===segment))segment=segments.some(s=>s.name==='SUPER PREMIUM')?'SUPER PREMIUM':segments[0]?.name??'STANDARD';
  const regionIds=[
   "Capital Autoservicio1*","Capital Tradicional1*",
   "Andes+Occidente Autoservicio1*","Andes+Occidente Tradicional1*",
@@ -29,7 +30,7 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   "Oriente Autoservicio1*","Oriente Tradicional1*"];
  const channelIds=regionIds.filter(x=>rows.some(r=>r.market===x));
  const marketName=label(market);
- const segmentOptions=segNames.map(s=>`<option value="${esc(s)}" ${s===segment?"selected":""}>${esc(s.replace("OTROS RON","Otros tipos de ron").replace("OTROS SEGMENTOS","Otros segmentos"))}</option>`).join("");
+ const segmentOptions=segNames.filter(s=>segments.some(x=>x.name===s)).map(s=>`<option value="${esc(s)}" ${s===segment?"selected":""}>${esc(s.replace("OTROS RON","Otros tipos de ron").replace("OTROS SEGMENTOS","Otros segmentos"))}</option>`).join("");
  const brandSet=[...new Set(allMarket.map(r=>r.brand))].filter(Boolean).sort();
  const brandOptions=brandSet.map(b=>`<option value="${esc(b)}" ${b===focusBrand?"selected":""}>${esc(b)}</option>`).join("");
  const controls=(selectors)=>`<div class="mi-controls">${selectors.includes("segment")?`<label>Segmento que quieres estudiar<select id="advSegmentSelect">${segmentOptions}</select></label>`:""}${selectors.includes("brand")?`<label>Marca que quieres estudiar<select id="advBrandSelect">${brandOptions}</select></label>`:""}<span>Universo: ${esc(marketName)} · año completo 2025 frente a enero–septiembre 2026</span></div>`;
@@ -68,12 +69,12 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   const top=rank(P1);
   const car=selected.records.find(x=>x.brand==="CARUPANO");
   const carWithin=marketTotal1>0?(value(car)??0)/marketTotal1*100:null;
-  const carWithin0=marketTotal0>0?(value(car,"value",P0)??0)/marketTotal0*100:null;
+  const carWithin0=marketTotal0>0&&value(car,"value",P0)!=null?value(car,"value",P0)/marketTotal0*100:null;
   const carRank=top.findIndex(x=>x.brand==="CARUPANO")+1;
   const leader=top[0],leaderWithin=marketTotal1>0?(value(leader)??0)/marketTotal1*100:null;
   const top6=top.slice(0,6);if(car&&!top6.includes(car))top6.push(car);
   const topRows=top.slice(0,Math.min(top.length,12)).map((r,i)=>{
-    const old=marketTotal0>0?value(r,"value",P0)/marketTotal0*100:null;
+    const before=value(r,'value',P0);const old=marketTotal0>0&&before!=null?before/marketTotal0*100:null;
     const now=marketTotal1>0?value(r)/marketTotal1*100:null;
     return `<tr class="${r.brand==="CARUPANO"?"highlight":""}"><td><strong>${i+1}. ${esc(r.brand)}</strong></td><td>${fmt(old)} %</td><td>${fmt(now)} %</td><td class="${col(old==null||now==null?null:now-old)}">${old==null||now==null?"—":smallDelta(now-old)}</td><td>${fmt(value(r))} %</td></tr>`;
   });
@@ -100,7 +101,7 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   const html=controls(["segment"])+intro+stats+`<div class="grid2 mi-grid">${panel("miPremiumRank","Quién gana dentro del segmento","Ranking actual por participación en el valor del segmento, no de toda la categoría.")}${panel("miPremiumShift","Cómo cambió la participación dentro del segmento","Las dos barras representan distintos períodos; compara marcas, no ingresos absolutos.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Ranking del segmento en ${esc(marketName)}</h2><p>Los porcentajes dentro del segmento se calculan dividiendo la aportación de cada marca entre el valor total aportado por ese segmento.</p></div></div>${tbl(["Marca","Cuota dentro del segmento 2025","Cuota 2026","Cambio","Aporte al mercado total 2026"],topRows)}</section><section class="panel mi-panel"><div class="panel-heading"><div><h2>¿Cómo compite Carúpano en este segmento por región?</h2><p>Ocho mercados regionales separados por canal. La comparación se recalcula para el mismo segmento en cada uno.</p></div></div>${tbl(["Región y canal","Peso del segmento en la zona","Puesto Carúpano","Cuota Carúpano en el segmento","Cambio de cuota","Líder del segmento"],regionTable)}<p class="mi-under-table">Las cuotas de distintos canales o regiones no se suman. Cuotas dentro de segmentos extremadamente pequeños pueden ser volátiles; comprueba su peso antes de sacar conclusiones.</p></section>`+disclaimer;
   const charts=[
    chart("miPremiumRank",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v)+" %"},grid:{left:118,right:22,top:12,bottom:36},xAxis:{type:"value",...ax,axisLabel:{color:"#aeb7ae",formatter:v=>v+" %"}},yAxis:{type:"category",data:reverse.map(r=>r.brand),...ax},series:[{type:"bar",barMaxWidth:20,data:reverse.map(r=>({value:marketTotal1>0?(value(r)??0)/marketTotal1*100:null,itemStyle:{color:r.brand==="CARUPANO"?colors.car:colors.other}}))}]}),
-   chart("miPremiumShift",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v)+" %"},legend:{bottom:0,textStyle:{color:"#c4c9c0"},data:["2025","2026"]},grid:{left:120,right:18,top:8,bottom:50},xAxis:{type:"value",...ax},yAxis:{type:"category",data:reverse.map(r=>r.brand),...ax},series:[{name:"2025",type:"bar",barMaxWidth:12,itemStyle:{color:colors.old},data:reverse.map(r=>marketTotal0>0?value(r,"value",P0)/marketTotal0*100:null)},{name:"2026",type:"bar",barMaxWidth:12,itemStyle:{color:colors.car},data:reverse.map(r=>marketTotal1>0?(value(r)??0)/marketTotal1*100:null)}]})
+   chart("miPremiumShift",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v)+" %"},legend:{bottom:0,textStyle:{color:"#c4c9c0"},data:["2025","2026"]},grid:{left:120,right:18,top:8,bottom:50},xAxis:{type:"value",...ax},yAxis:{type:"category",data:reverse.map(r=>r.brand),...ax},series:[{name:"2025",type:"bar",barMaxWidth:12,itemStyle:{color:colors.old},data:reverse.map(r=>marketTotal0>0&&value(r,"value",P0)!=null?value(r,"value",P0)/marketTotal0*100:null)},{name:"2026",type:"bar",barMaxWidth:12,itemStyle:{color:colors.car},data:reverse.map(r=>marketTotal1>0?(value(r)??0)/marketTotal1*100:null)}]})
   ];
   return {html,charts,meta:{segment:selected.name,segmentWeight:marketTotal1,carShare:carWithin,carRank,leader:leader?.brand,regionalRows:rowsRegion.length}};
  };
