@@ -76,7 +76,7 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 
 - **Resumen ejecutivo:** descubre la situación de la marca y los cambios de participación.
 - **Diagnóstico estratégico:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones e investigaciones comerciales.
-- **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
+- **Marcas competidoras:** compara Carúpano con cualquier otra marca medida. El ranking de 12 marcas sustituye a la antigua matriz de puntos que mezclaba cuota y distribución ponderada.
 - **Competencia por región:** identifica los cinco principales competidores de cada región, ciudad o canal incluido en Nielsen, junto con los resultados de Carúpano.
 - **Estructura del mercado:** descubre el peso de cada segmento en el mercado total.
 - **Competencia por segmento:** compara cuotas dentro de Standard, Premium, Super Premium y otras clasificaciones.
@@ -148,7 +148,7 @@ La sección **Diagnóstico estratégico** transforma las métricas NielsenIQ en 
 
 1. **Competidores:** cuánto cambia la participación de Carúpano, Santa Teresa y Cacique, cómo evoluciona la distancia y qué segmentos explican matemáticamente los cambios de cuota (por ejemplo, el aumento del segmento STANDARD de Santa Teresa); sin atribuir automáticamente las ganancias de una marca a las pérdidas de otra.
 2. **Canales y regiones:** comparación visual de los cambios de participación y tabla interactiva para explorar cada corte, sin sumar mercados superpuestos.
-3. **Productos y posicionamiento:** contribución de los segmentos de Carúpano al total de ron vendido y advertencias sobre cambios de clasificación, mezcla y formatos.
+3. **Productos y posicionamiento:** composición interna del valor de Carúpano (segmentos que suman 100 % de la marca) y tabla separada de contribuciones a la participación total del mercado, con cambios en puntos porcentuales y precisión para cifras pequeñas.
 4. **Prioridades de actuación:** cuatro propuestas diferenciadas, con hallazgo medido, significado, acción, indicador de seguimiento, información interna faltante y responsables sugeridos.
 
 **Casos comerciales prioritarios para estudiar:** autoservicios de Capital (pérdida simultánea de cuota y cobertura), licorerías (mejora de distribución numérica y caída de participación), canal tradicional de Centro + Centro Occidente (participación creciente) y contribución del portafolio de segmentos premium.
