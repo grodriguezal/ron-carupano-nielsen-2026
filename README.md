@@ -2,7 +2,7 @@
 
 **NielsenIQ · Ron Venezuela · 2025 completo / 2026 YTD septiembre**
 
-Plataforma de inteligencia de mercado para Ron Carúpano, con **14 secciones navegables** y módulos avanzados de segmentos, competencia premium, posicionamiento relativo, distribución, formatos y movimientos de marcas.
+Plataforma de inteligencia de mercado para Ron Carúpano, con **13 secciones navegables** y módulos avanzados de segmentos, competencia premium, índice relativo de valor/volumen, distribución y movimientos de marcas.
 
 ## Detalles de las tablas sin cambiar de sección
 
@@ -15,39 +15,37 @@ En **Diagnóstico estratégico**, **Competencia por región** y la tabla de segm
 
 Los mercados mantienen su propio denominador; los períodos 2025 y 2026 siguen sin ser comparaciones interanuales de igual duración. `tests/test_inline_details.mjs` comprueba apertura, cierre y contenido de los detalles. Los assets usan un identificador de versión para evitar código antiguo en caché.
 
-## Inteligencia de mercado avanzada — seis dashboards añadidos
+## Inteligencia de mercado avanzada — cinco dashboards activos
 
-Desde la versión 1.2 se incorporan **seis módulos de inteligencia NielsenIQ**. No incluyen simulaciones de participación ni modelos presupuestarios.
+Desde la versión 1.2 se incorporan **cinco módulos de inteligencia de mercado basados en NielsenIQ**. No incluyen simulaciones de participación ni modelos presupuestarios.
 
 | Módulo | Pregunta de negocio | Nivel de cálculo |
 | --- | --- | --- |
 | **Estructura del mercado** | ¿Qué segmentos representan mayor o menor proporción del mercado en cada región? | Suma de aportaciones por marca-segmento, sin volver a agregar tamaños |
 | **Competencia por segmento** | ¿Qué cuota tiene Carúpano *dentro* de Standard, Premium, Super Premium y demás segmentos frente a sus rivales? | Aportación marca-segmento ÷ total del segmento en el mismo mercado |
-| **Posicionamiento de valor** | ¿Qué marcas aportan relativamente más valor que volumen? | Índice 100 × participación en valor ÷ participación en volumen |
+| **Índice valor/volumen (cálculo propio)** | ¿Qué marcas aportan relativamente más valor que volumen? | Índice derivado = 100 × participación en valor ÷ participación en volumen; ambos porcentajes proceden de NielsenIQ |
 | **Diagnóstico de distribución** | ¿Dónde coinciden cambios de participación y presencia numérica o ponderada? | Señales descriptivas por mercado; no mide causalidad |
-| **Inteligencia de formatos** | ¿Qué aporte tienen las presentaciones de 700, 750 y otros tamaños, por segmento? | Aportación marca-segmento-tamaño al total; no representa un SKU comercial |
 | **Movimientos competitivos** | ¿Qué marcas ganan o pierden peso relativo y qué segmentos explican su cambio? | Cambios de participación por marca y segmentación |
 
 ### Criterios de interpretación
 
 - El denominador de **participación dentro de Super Premium** es el valor del segmento Super Premium, mientras que una **aportación de Super Premium al mercado** usa el valor total de ron. Nunca se deben confundir.
 - La base compara **el año completo de 2025 y el acumulado a septiembre de 2026**. Las diferencias entre participaciones se muestran en puntos porcentuales, pero no constituyen crecimiento interanual homogéneo en ventas.
-- El índice de **valor/volumen** tiene como referencia 100 para la categoría. Es un indicador relativo que puede reflejar cambios en precios o mezcla de formatos: **no es un precio real ni permite calcular rentabilidad**. Para evitar ratios extremos, su ranking principal limita las marcas a al menos 0,3 % de participación en valor; Carúpano siempre está incluido en el gráfico de referencia.
+- El índice de **valor/volumen es calculado por este dashboard, no proporcionado directamente por NielsenIQ**; toma las participaciones en valor y volumen del proveedor y tiene como referencia 100 para la categoría. Es un indicador relativo que puede reflejar cambios en precios o mezcla de formatos: **no es un precio real ni permite calcular rentabilidad**. Para evitar ratios extremos, su ranking principal limita las marcas a al menos 0,3 % de participación en valor; Carúpano siempre está incluido en el gráfico de referencia.
 - Los **mercados y canales NielsenIQ se solapan** y las distribuciones no son aditivas. No se suman participaciones ni se extrapolan a valor económico absoluto.
 - Un cambio de participación de una marca puede explicarse por el peso del segmento y por su participación dentro del segmento. El dashboard ofrece ambas lecturas, sin afirmar transferencia de consumidores.
-- Los cambios entre formatos de 700 y 750 mililitros no demuestran por sí solos cambios de consumo: es necesario comprobar distribución, codificación, referencias y disponibilidad.
 
 ### Validación de los nuevos módulos
 
-`tests/test_advanced.mjs` comprueba las **126 combinaciones** de seis dashboards por los 21 cortes de mercado, además de los puntos de referencia:
+`tests/test_advanced.mjs` comprueba las **105 combinaciones** de cinco dashboards por los 21 cortes de mercado, además de los puntos de referencia:
 
 - Standard nacional: **62,4091 %** del valor de ron en 2026 hasta septiembre.
 - Carúpano dentro de Super Premium nacional: **14,6738 %**, calculado sobre el segmento.
 - Índice relativo de Carúpano en valor/volumen: **122,56**.
-- Conciliación de aportaciones del portafolio por segmento y tamaño.
+- Conciliación de aportaciones del portafolio por segmento.
 - Ranking de marcas y señales de distribución calculadas sin mezclar canales.
 
-`tests/test_navigation.mjs` comprueba la navegación entre las **14 secciones**, incluidos los nuevos accesos directos. Todo se ejecuta al lanzar `npm test`, integrado en GitHub Actions.
+`tests/test_navigation.mjs` comprueba la navegación entre las **13 secciones**, incluidos los nuevos accesos directos. Todo se ejecuta al lanzar `npm test`, integrado en GitHub Actions.
 
 ## Datos
 
@@ -80,9 +78,8 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 - **Competencia por región:** identifica los cinco principales competidores de cada región, ciudad o canal incluido en Nielsen, junto con los resultados de Carúpano.
 - **Estructura del mercado:** descubre el peso de cada segmento en el mercado total.
 - **Competencia por segmento:** compara cuotas dentro de Standard, Premium, Super Premium y otras clasificaciones.
-- **Posicionamiento de valor:** compara el índice valor/volumen de Carúpano y otras marcas.
+- **Índice valor/volumen:** compara un índice construido por el dashboard con los porcentajes en valor y volumen medidos por NielsenIQ; no es una métrica entregada directamente por NielsenIQ.
 - **Diagnóstico de distribución:** identifica señales al cruzar presencia y cuota.
-- **Inteligencia de formatos:** analiza tamaños de 700 ml, 750 ml y otros formatos.
 - **Movimientos competitivos:** rastrea ganancias y pérdidas de participación por marca.
 - **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
 - **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.
@@ -93,7 +90,7 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 
 ## Navegación y acceso directo
 
-El menú del dashboard tiene catorce secciones interactivas. Tras añadir **Competencia por región**, se corrigió un problema potencial de caché: un navegador podía mostrar un `index.html` nuevo junto a un `app.js` anterior, causando que el botón fuera visible pero no respondiera.
+El menú del dashboard tiene trece secciones interactivas. Tras añadir **Competencia por región**, se corrigió un problema potencial de caché: un navegador podía mostrar un `index.html` nuevo junto a un `app.js` anterior, causando que el botón fuera visible pero no respondiera.
 
 Los scripts y estilos se cargan con identificadores de versión coherentes. La sección regional permite ahora acceso directo mediante la URL:
 
@@ -131,7 +128,7 @@ En los 21 mercados actuales la diferencia observada se mantiene dentro del marge
 
 ## Cambios de navegación
 
-Se ha retirado el módulo de escenarios hipotéticos, tanto de la navegación como de la lógica de simulación. El **Diagnóstico estratégico** relaciona hallazgos medidos por NielsenIQ con recomendaciones de investigación y ejecución comercial, sin construir pronósticos no fundamentados.
+Se han retirado los módulos de escenarios hipotéticos y de Inteligencia de formatos, tanto de la navegación como de las rutas y cálculos específicos. El **Diagnóstico estratégico** relaciona hallazgos medidos por NielsenIQ con recomendaciones de investigación y ejecución comercial, sin construir pronósticos no fundamentados.
 
 ### Validación de la comparación regional
 

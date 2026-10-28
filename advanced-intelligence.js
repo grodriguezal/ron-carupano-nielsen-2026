@@ -10,7 +10,6 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
  const label=m=>String(m).replace(/1\*?$/,"").replace(/^T /,"").replaceAll("+"," + ").replaceAll("Alimentos_Abs","corte especial de alimentos");
  const allMarket=rows.filter(r=>r.market===market);
  const allSegments=portfolio.filter(r=>r.market===market&&r.segment!=null&&r.size_ml==null);
- const allFormats=portfolio.filter(r=>r.market===market&&r.segment!=null&&r.size_ml!=null);
  const segNames=["STANDARD","PREMIUM","SUPER PREMIUM","ULTRA PREMIUM","OTROS RON","OTROS SEGMENTOS"];
  const segments=segNames.map(name=>{
   const records=allSegments.filter(r=>r.segment===name);
@@ -115,12 +114,12 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   const reverse=ordered.slice().sort((a,b)=>(getIndex(a,P1)??0)-(getIndex(b,P1)??0));
   const marker=(r)=>r.brand==="CARUPANO"?"Carúpano":r.brand;
   const tableRows=rank.map((r,i)=>`<tr class="${r.brand==="CARUPANO"?"highlight":""}"><td><strong>${i+1}. ${esc(r.brand)}</strong></td><td>${fmt(value(r,"value"))} %</td><td>${fmt(value(r,"volume"))} %</td><td>${fmt(getIndex(r,P1),1)}</td><td class="${col(getIndex(r,P0)==null?null:getIndex(r,P1)-getIndex(r,P0))}">${getIndex(r,P0)==null?"—":`${getIndex(r,P1)>getIndex(r,P0)?"+":""}${fmt(getIndex(r,P1)-getIndex(r,P0),1)} puntos de índice`}</td></tr>`);
-  const intro=narr("¿Carúpano representa más valor que volumen?",
-   `En ${esc(marketName)}, su índice relativo es ${fmt(carIndex,1)}, frente a la referencia 100 que representa el promedio de la categoría.`,
-   `Un índice superior a 100 significa que la marca aporta proporcionalmente más valor que volumen. Puede reflejar precios distintos y/o mezcla de presentaciones. No es un precio medio real ni prueba que un producto sea más caro.`,
-   `Comparar Carúpano con otras marcas relevantes y observar si cambia el índice con el tiempo. Para confirmar precios o rentabilidad se necesitan facturación, unidades, litros comparables, descuentos y márgenes.`);
-  const stats=statRow([stat("Carúpano · índice relativo",fmt(carIndex,1),"100 representa el promedio de ron"),stat("Participación en valor",fmt(value(focus,"value"))+" %","De cada 100 unidades monetarias medidas"),stat("Participación en volumen",fmt(value(focus,"volume"))+" %","De cada 100 unidades de volumen medidas"),stat("Variación del índice",carIndex!=null&&carPast!=null?`${carIndex>=carPast?"+":""}${fmt(carIndex-carPast,1)} puntos de índice`:"—","No es variación porcentual de precios")]);
-  const html=intro+stats+`<div class="mi-formula">Índice relativo = (participación de mercado en valor ÷ participación en volumen) × 100. <strong>100 = promedio de la categoría.</strong> No equivale a un precio por botella, precio por litro ni margen.</div><div class="grid2 mi-grid">${panel("miValueRank","Comparación del índice entre marcas","Se muestran marcas con al menos 0,3 % de cuota en valor para reducir ratios extremos de marcas muy pequeñas. Se añade Carúpano siempre.")}${panel("miValueScatter","Valor y volumen: dos medidas diferentes","Cada punto representa una marca. La línea conceptual de igualdad corresponde al índice 100; estar por encima indica mayor contribución de valor que de volumen.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Posición relativa de valor de las marcas</h2><p>El índice puede cambiar por precios, promociones o productos vendidos. No permite atribuir una causa única.</p></div></div>${tbl(["Marca","Participación valor","Participación volumen","Índice relativo 2026","Cambio de índice vs. 2025"],tableRows)}<p class="mi-under-table">Se incluyen marcas con al menos 0,3 % de participación nacional o del mercado seleccionado, según corresponda. Algunas marcas menores quedan fuera de este ranking, pero los totales no se recalculan.</p></section>`+disclaimer;
+  const intro=narr("¿Qué nos dice la relación entre valor y volumen?",
+   `En ${esc(marketName)}, Carúpano tiene un índice calculado de ${fmt(carIndex,2)} (100 = referencia de la categoría). Se obtiene a partir de su participación en valor y en volumen, ambas medidas por NielsenIQ.`,
+   `Por encima de 100 significa más valor por unidad de volumen en términos relativos frente a la media de ron medida; por debajo, menos. No es una métrica suministrada directamente por NielsenIQ, ni mide precio de etiqueta, margen o rentabilidad.`,
+   `Comparar índices de marcas con participación relevante. Contrastar precios por litro, descuentos y mezcla de referencias antes de atribuir causas o tomar decisiones comerciales.`);
+  const stats=statRow([stat("Carúpano · índice calculado",fmt(carIndex,2),"100 = promedio de la categoría; cálculo del dashboard"),stat("Participación en valor",fmt(value(focus,"value"))+" %","De cada 100 unidades monetarias medidas"),stat("Participación en volumen",fmt(value(focus,"volume"))+" %","De cada 100 unidades de volumen medidas"),stat("Variación del índice",carIndex!=null&&carPast!=null?`${carIndex>=carPast?"+":""}${fmt(carIndex-carPast,1)} puntos de índice`:"—","No es variación porcentual de precios")]);
+  const html=intro+stats+`<div class="mi-formula"><strong>FUENTE Y MÉTODO</strong> · NielsenIQ proporciona participación en valor y participación en volumen. <strong>El índice NO viene calculado en NielsenIQ: lo calcula este dashboard.</strong><p>Fórmula: (cuota de valor ÷ cuota de volumen) × 100. <strong>Carúpano en ${esc(marketName)}:</strong> ${fmt(value(focus,"value"),4)} % ÷ ${fmt(value(focus,"volume"),4)} % × 100 = <strong>${fmt(carIndex,2)}</strong>. Un índice de 100 equivale a la media de la categoría. ${carIndex==null?'Sin datos suficientes para interpretar el resultado.':`Carúpano registra ${fmt(Math.abs(carIndex-100),2)} % ${carIndex>=100?'por encima':'por debajo'} de esa referencia relativa.`}</p><small>No equivale a un precio de venta, margen, rentabilidad ni calidad percibida. La comparación solo es válida dentro del mismo universo y período.</small></div><div class="grid2 mi-grid">${panel("miValueRank","Comparación del índice entre marcas","Se muestran marcas con al menos 0,3 % de cuota en valor para reducir ratios extremos de marcas muy pequeñas. Se añade Carúpano siempre.")}${panel("miValueScatter","Valor y volumen: dos medidas diferentes","Cada punto representa una marca. La línea conceptual de igualdad corresponde al índice 100; estar por encima indica mayor contribución de valor que de volumen.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Posición relativa de valor de las marcas</h2><p>El índice puede cambiar por precios, promociones o productos vendidos. No permite atribuir una causa única.</p></div></div>${tbl(["Marca","Participación valor","Participación volumen","Índice relativo 2026","Cambio de índice vs. 2025"],tableRows)}<p class="mi-under-table">Se incluyen marcas con al menos 0,3 % de participación nacional o del mercado seleccionado, según corresponda. Algunas marcas menores quedan fuera de este ranking, pero los totales no se recalculan.</p></section>`+disclaimer;
   const max=Math.max(1,...all.map(r=>value(r,"value")), ...all.map(r=>value(r,"volume")));
   const charts=[
    chart("miValueRank",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v,1)+" puntos de índice"},grid:{left:130,right:22,top:14,bottom:38},xAxis:{type:"value",...ax},yAxis:{type:"category",data:reverse.map(r=>marker(r)),...ax},series:[{type:"bar",barMaxWidth:22,data:reverse.map(r=>({value:getIndex(r,P1),itemStyle:{color:r.brand==="CARUPANO"?colors.car:colors.other}}))}]}),
@@ -149,32 +148,6 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   ];
   return {html,charts,meta:{marketCount:arr.length,negativeBoth:twoDown.length,mixed:mixed.length}};
  };
- const buildFormats=()=>{
-  const car=allFormats.filter(r=>r.brand==="CARUPANO");
-  const formats=[...new Set(car.map(r=>String(r.size_ml)))].sort((a,b)=>Number(a)-Number(b));
-  const fmtSize=x=>`${esc(x)} ml`;
-  const totalSize=(size,p)=>car.filter(r=>String(r.size_ml)===String(size)).reduce((a,r)=>a+(value(r,"value",p)??0),0);
-  const entries=formats.map(size=>({size,share0:totalSize(size,P0),share1:totalSize(size,P1)}));
-  const segEntries=car.filter(r=>r.segment===segment).sort((a,b)=>Number(a.size_ml)-Number(b.size_ml));
-  const segSum=allSegments.find(x=>x.brand==="CARUPANO"&&x.segment===segment);
-  const reconciliation=Math.abs(segEntries.reduce((a,r)=>a+(value(r)??0),0)-(value(segSum)??0));
-  const tableRows=car.slice().sort((a,b)=>a.segment.localeCompare(b.segment)||Number(a.size_ml)-Number(b.size_ml)).map(r=>`<tr><td><strong>${esc(r.segment)}</strong></td><td>${fmtSize(r.size_ml)}</td><td>${fmt(value(r,"value",P0),4)} %</td><td>${fmt(value(r),4)} %</td><td class="${col(delta(r))}">${smallDelta(delta(r))}</td></tr>`);
-  const chosenRows=segEntries.map(r=>`<tr><td>${fmtSize(r.size_ml)}</td><td>${fmt(value(r,"value",P0),4)} %</td><td>${fmt(value(r),4)} %</td><td class="${col(delta(r))}">${smallDelta(delta(r))}</td></tr>`);
-  const size700=entries.find(r=>r.size==="700"),size750=entries.find(r=>r.size==="750");
-  const change700=size700?size700.share1-size700.share0:null,change750=size750?size750.share1-size750.share0:null;
-  const selected=segEntries.slice().sort((a,b)=>(value(b)??0)-(value(a)??0))[0];
-  const intro=narr("¿Está cambiando la combinación de tamaños de Carúpano?",
-    `En ${esc(marketName)}, los productos de 700 mililitros aportan ${fmt(size700?.share1,4)} % del valor total del mercado, mientras los de 750 mililitros aportan ${fmt(size750?.share1,4)} %.`,
-    `El cambio de aporte entre tamaños puede deberse a sustitución, disponibilidad, clasificación del proveedor o composición del catálogo. No podemos afirmar que haya cambiado la preferencia de los consumidores.`,
-    `Revisar productos y referencias reales, disponibilidad por presentación y posibles recodificaciones. No sumar formatos de diferentes niveles ni confundir 700 ml con un SKU específico.`);
-  const stats=statRow([stat("700 ml · participación aportada",fmt(size700?.share1,4)+" %",change700==null?"Sin período de comparación":signed(change700)),stat("750 ml · participación aportada",fmt(size750?.share1,4)+" %",change750==null?"Sin período de comparación":signed(change750)),stat("Presentaciones registradas",String(formats.length),"Tamaños de Carúpano en el mercado elegido"),stat("Suma de tamaños en segmento",reconciliation<=.0005?"✓ Coincide":segEntries.length?"Revisar":"Sin registro",`Conciliación: ${esc(segment)}, margen 0,0005 puntos`)]);
-  const html=controls(["segment"])+intro+stats+`<div class="grid2 mi-grid">${panel("miFormatContribution","Aportación de Carúpano por formato","Participación de cada tamaño dentro del mercado total de ron. No son porcentajes de composición interna de las botellas.")}${panel("miFormatSegment","Qué formatos aportan dentro del segmento elegido","Comparación de aportación de cada tamaño de Carúpano del segmento seleccionado.")}</div><section class="panel mi-panel"><div class="panel-heading"><div><h2>Detalle por segmento y presentación</h2><p>Cada combinación de marca, segmento y tamaño aparece una sola vez en este nivel. No representa necesariamente un producto individual.</p></div></div>${tbl(["Segmento","Tamaño","Aportación 2025","Aportación 2026","Cambio entre períodos"],tableRows)}</section><section class="panel mi-panel"><div class="panel-heading"><div><h2>Zoom del segmento ${esc(segment)}</h2><p>Qué presentaciones componen la aportación de este segmento de Carúpano.</p></div></div>${chosenRows.length?tbl(["Tamaño","2025 completo","2026 hasta septiembre","Cambio"],chosenRows):'<p class="mi-empty">No hay formatos registrados en este segmento para el mercado seleccionado.</p>'}</section>`+disclaimer;
-  const charts=[
-   chart("miFormatContribution",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v,4)+" %"},legend:{bottom:0,textStyle:{color:"#c2cac1"},data:["2025","2026"]},grid:{left:55,right:20,top:14,bottom:50},xAxis:{type:"category",data:entries.map(x=>fmtSize(x.size)),...ax},yAxis:{type:"value",...ax},series:[{name:"2025",type:"bar",barMaxWidth:21,itemStyle:{color:colors.old},data:entries.map(x=>x.share0)},{name:"2026",type:"bar",barMaxWidth:21,itemStyle:{color:colors.car},data:entries.map(x=>x.share1)}]}),
-   chart("miFormatSegment",{tooltip:{trigger:"axis",valueFormatter:v=>fmt(v,4)+" %"},grid:{left:62,right:17,top:20,bottom:45},xAxis:{type:"category",data:segEntries.map(r=>fmtSize(r.size_ml)),...ax},yAxis:{type:"value",...ax},series:[{name:"2025",type:"bar",barMaxWidth:28,itemStyle:{color:colors.old},data:segEntries.map(r=>value(r,"value",P0))},{name:"2026",type:"bar",barMaxWidth:28,itemStyle:{color:colors.car},data:segEntries.map(r=>value(r))}]})
-  ];
-  return {html,charts,meta:{formatCount:formats.length,formatRows:car.length,reconciliation,change700,change750}};
- };
  const buildMovements=()=>{
   const all=allMarket.filter(r=>value(r)!=null&&value(r,"value",P0)!=null);
   const gains=all.filter(r=>delta(r)!=null).sort((a,b)=>delta(b)-delta(a));
@@ -200,7 +173,7 @@ export function buildAdvancedView(rows,portfolio,page,market,segment="SUPER PREM
   ];
   return {html,charts,meta:{brands:all.length,gainers:positive.length,losers:negative.length,largestGainer:gains[0]?.brand,carDelta:delta(car)}};
  };
- const pages={segments:buildSegments,premium:buildPremium,value:buildValue,distributionMatrix:buildDistribution,formats:buildFormats,movements:buildMovements};
+ const pages={segments:buildSegments,premium:buildPremium,value:buildValue,distributionMatrix:buildDistribution,movements:buildMovements};
  if(!pages[page])throw new Error("Dashboard no reconocido: "+page);
  return {page,market,...pages[page]()};
 }
