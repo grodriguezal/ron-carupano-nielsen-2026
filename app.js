@@ -1,5 +1,5 @@
-import {buildStrategicView} from './strategic-intelligence.js';
-import {buildRegionalView} from './regional-intelligence.js';
+import {buildStrategicView} from './strategic-intelligence.js?v=20261028-navfix2';
+import {buildRegionalView} from './regional-intelligence.js?v=20261028-navfix2';
 const COLORS={gold:'#c5b783',white:'#ebe9e0',muted:'#919b96',grid:'#2b3230',red:'#e08d80',green:'#85b89c',blue:'#79989d'};
 const NATION='Total Venezuela1';
 const PAGES={
@@ -223,5 +223,16 @@ function strategic(){
  });
 }
 function render(){state.charts.forEach(c=>c.dispose());state.charts=[];const [kick,title,desc]=PAGES[state.page];$('kicker').textContent=kick;$('pageTitle').innerHTML=title;$('pageDesc').textContent=desc;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x.dataset.page===state.page));({overview,strategic,competition,regional,channels,distribution,portfolio,radar})[state.page]();explainDashboard();}
-function initialize(){if($('brandHome'))$('brandHome').addEventListener('click',()=>{state.page='overview';render()});const markets=state.meta.markets||[...new Set(state.rows.map(x=>x.market))];$('marketSelect').innerHTML=markets.map(m=>`<option value="${m}" ${m===NATION?'selected':''}>${readableMarket(m)}</option>`).join('');const national=sorted(NATION,'value');$('competitorSelect').innerHTML=national.filter(x=>x.brand!=='CARUPANO').map(r=>`<option value="${r.brand}" ${r.brand==='CACIQUE'?'selected':''}>${r.brand}</option>`).join('');document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>{state.page=b.dataset.page;render()}));$('marketSelect').addEventListener('change',e=>{state.market=e.target.value;render()});$('metricSelect').addEventListener('change',e=>{state.metric=e.target.value;render()});$('competitorSelect').addEventListener('change',e=>{state.competitor=e.target.value;render()});$('exportBtn').addEventListener('click',()=>window.print());window.addEventListener('resize',()=>state.charts.forEach(c=>c.resize()));render()}
-async function main(){try{const results=await Promise.all(['data/market-brand.json','data/portfolio.json','data/metadata.json'].map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error(`${p}: ${r.status}`);return r.json()})));[state.rows,state.portfolio,state.meta]=results;initialize()}catch(err){$('view').innerHTML=`<div class="notice"><strong>No se pudo cargar el dataset.</strong> ${err.message}. Ejecuta la transformación antes de publicar y utiliza un servidor web local (no abras el HTML con file://).</div>`;console.error(err)}}main();
+function navigate(page,{updateHash=true}={}){
+ if(!Object.prototype.hasOwnProperty.call(PAGES,page)){
+  console.error('Sección desconocida:',page);
+  return;
+ }
+ state.page=page;
+ if(updateHash&&window.location&&window.location.hash!==('#'+page)){
+  window.location.hash=page;
+ }
+ render();
+}
+function initialize(){if($('brandHome'))$('brandHome').addEventListener('click',()=>navigate('overview'));const markets=state.meta.markets||[...new Set(state.rows.map(x=>x.market))];$('marketSelect').innerHTML=markets.map(m=>`<option value="${m}" ${m===NATION?'selected':''}>${readableMarket(m)}</option>`).join('');const national=sorted(NATION,'value');$('competitorSelect').innerHTML=national.filter(x=>x.brand!=='CARUPANO').map(r=>`<option value="${r.brand}" ${r.brand==='CACIQUE'?'selected':''}>${r.brand}</option>`).join('');document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.page)));$('marketSelect').addEventListener('change',e=>{state.market=e.target.value;render()});$('metricSelect').addEventListener('change',e=>{state.metric=e.target.value;render()});$('competitorSelect').addEventListener('change',e=>{state.competitor=e.target.value;render()});$('exportBtn').addEventListener('click',()=>window.print());window.addEventListener('resize',()=>state.charts.forEach(c=>c.resize()));window.addEventListener('hashchange',()=>{const page=window.location?.hash?.slice(1);if(page&&PAGES[page]&&page!==state.page)navigate(page,{updateHash:false})});const requestedPage=window.location?.hash?.slice(1);if(requestedPage&&PAGES[requestedPage])state.page=requestedPage;render()}
+async function main(){try{const results=await Promise.all(['data/market-brand.json','data/portfolio.json','data/metadata.json'].map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error(`${p}: ${r.status}`);return r.json()})));[state.rows,state.portfolio,state.meta]=results;initialize()}catch(err){$('view').innerHTML=`<div class="notice" role="alert"><strong>No se pudieron cargar los datos de NielsenIQ.</strong> ${String(err.message).replace(/</g,'&lt;')}. <button type="button" id="retryData" class="ghost">Reintentar carga</button><p>Si el menú no responde, actualiza la página sin caché y vuelve a intentar.</p></div>`;const retry=$('retryData');if(retry)retry.addEventListener('click',()=>main());console.error(err)}}main();
