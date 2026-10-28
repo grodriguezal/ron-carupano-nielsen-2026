@@ -222,3 +222,5 @@ body,button,select,input,table,.nav-button,.sidebar,.topbar,.kicker,.eyebrow,.su
 @media(max-width:1100px){.mi-brief-grid{grid-template-columns:1fr}.mi-stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}.mi-grid{grid-template-columns:1fr}}
 @media(max-width:760px){#nav{display:flex;flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:unset;white-space:nowrap;gap:7px;padding-bottom:10px}.nav-section-title{display:none}.mi-controls{padding:14px}.mi-controls label,.mi-controls select{width:100%;min-width:0}.mi-brief{padding:19px}.mi-brief h2{font-size:30px}.mi-stat-row{gap:8px}.mi-stat{padding:12px}.mi-stat strong{font-size:21px}.mi-panel .mi-plot{height:330px}}
 @media print{#nav,.mi-controls{display:none!important}.mi-brief,.mi-stat,.mi-panel{break-inside:avoid}}
+
+.mi-drill{color:#f1d6a9;background:#29291f;border:1px solid #716046;border-radius:7px;padding:8px 10px;white-space:nowrap;font:600 11px var(--font-secondary)}.mi-drill:hover,.mi-drill:focus-visible{background:#51422d;color:#fff;outline-offset:2px}
