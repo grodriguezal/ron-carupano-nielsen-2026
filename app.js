@@ -98,7 +98,7 @@ function buildMetricInsights(m=state.market,metric=state.metric){
  }
  let third;
  if(metric==='numeric_distribution'||metric==='weighted_distribution'){
-  third={tag:'03 / DISTRIBUCIÓN Y ACCIÓN',title:diag.title,body:'Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:diag.action};
+  third={tag:'03 / DISTRIBUCIÓN Y ACCIÓN',title:(metric==='numeric_distribution'?'Cobertura numérica: ':'Peso comercial de la cobertura: ')+diag.title,body:'Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:(metric==='numeric_distribution'?'Partir de los establecimientos ganados o perdidos: ':'Partir de las cuentas que explican la relevancia comercial: ')+diag.action};
  }else if(metric==='volume'){
   const val=diff(key(c,'2025_full','value'),key(c,'2026_ytd_sep','value'));
   third={tag:'03 / QUÉ INVESTIGAR',title:'Volumen y valor no son la misma medida',body:'Cambio en volumen: '+signed(d)+'; en valor: '+signed(val)+'. Las diferencias pueden estar relacionadas con precios, promociones o mezcla de productos, sin probar ninguna causa. '+diag.title+'.',action:'Contrastar precios efectivos, mix, promociones y cambios en ambas distribuciones antes de concluir por qué cambia el volumen.'};
