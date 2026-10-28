@@ -43,6 +43,17 @@ export function buildStrategicView(rows,portfolio,market,competitor){
  const comps=leaders.map(b=>({...b,row:brand(market,b.name)})).filter(x=>x.row);
  const selectedPort=portfolio.filter(r=>r.market===market&&r.brand==='CARUPANO'&&r.segment!=null&&r.size_ml==null).sort((a,b)=>(value(b)||0)-(value(a)||0));
  const portfolioRows=selectedPort.map(r=>`<tr><td><strong>${esc(r.segment)}</strong></td><td>${f(value(r,'value',BEFORE))} %</td><td>${f(value(r))} %</td><td>${difference(movement(r))}</td></tr>`).join('');
+ const competitorSegment=(who,segment)=>portfolio.find(r=>r.market===market&&r.brand===who&&r.segment===segment&&r.size_ml==null);
+ const segments=['STANDARD','PREMIUM','SUPER PREMIUM','ULTRA PREMIUM','OTROS RON'];
+ const segmentShift=segments.map(seg=>({
+  segment:seg,car:movement(competitorSegment('CARUPANO',seg)),
+  st:movement(competitorSegment('SANTA TERESA',seg)),
+  cac:movement(competitorSegment('CACIQUE',seg))
+ }));
+ const stStandard=movement(competitorSegment('SANTA TERESA','STANDARD'));
+ const cacStandard=movement(competitorSegment('CACIQUE','STANDARD'));
+ const carStandard=movement(competitorSegment('CARUPANO','STANDARD'));
+ const segmentMatrix=segmentShift.map(x=>`<tr><td><strong>${esc(x.segment)}</strong></td><td>${difference(x.car)}</td><td>${difference(x.st)}</td><td>${difference(x.cac)}</td></tr>`).join('');
  const nationalPort=portfolio.filter(r=>r.market===NATION&&r.brand==='CARUPANO'&&r.segment!=null&&r.size_ml==null);
  const premium= nationalPort.find(r=>r.segment==='SUPER PREMIUM'),ultra=nationalPort.find(r=>r.segment==='ULTRA PREMIUM');
  const coverage=marketStats.filter(x=>x.id!=='Total Venezuela1').map(x=>`<tr class="${x.id===market?'strategic-focus':''}"><td><strong>${esc(x.name)}</strong><small>${esc(diag(x)[0])}</small></td><td>${difference(x.c)}</td><td>${difference(x.s)}</td><td>${difference(x.q)}</td><td>${difference(x.dn)}</td><td><button class="inspect-link" data-inspect-market="${esc(x.id)}" type="button">Analizar mercado</button></td></tr>`).join('');
@@ -98,6 +109,12 @@ export function buildStrategicView(rows,portfolio,market,competitor){
  <div class="section-title">CAPÍTULO 1 · COMPETIDORES</div>
  <section class="grid2 strategic-section"><div class="panel"><div class="panel-heading"><div><h2>¿Qué marcas aumentan su peso en el mercado?</h2><p>Comparación de participación en valor. 2025 completo frente a 2026 hasta septiembre.</p></div></div><div class="plot" id="strategicCompetitors"></div><p class="chart-reading"><strong>Cómo leerlo:</strong> cada barra muestra qué parte de cada 100 unidades de valor de ron vendido corresponde a una marca. No indica ventas en dinero.</p></div>
  <div class="panel strategy-explanation"><div class="flag">LECTURA DE LOS DATOS</div><h3>Ganar participación no es lo mismo que llegar a más tiendas</h3><p>${esc(comparison)}</p><p>${esc(dominant)}</p><p>Santa Teresa registra un cambio de ${signed(stNum)} en presencia numérica y de ${signed(stWeighted)} en presencia ponderada en el mercado elegido. <strong>Su cambio de participación no puede atribuirse automáticamente a una ampliación de distribución.</strong></p><div class="explanation-action"><strong>Qué conviene investigar</strong><p>Revisar precios, surtido, actividad comercial, ubicación en tienda y ventas por establecimiento, empezando por los mercados donde se amplía la diferencia competitiva.</p></div><small>Advertencia: una coincidencia entre variaciones de marcas no demuestra transferencia de consumidores entre ellas.</small></div></section>
+ <section class="panel strategic-panel strategic-segment-comp">
+  <div class="panel-heading"><div><h2>¿En qué segmentos están ganando o perdiendo las marcas?</h2><p>Qué parte del cambio total de participación procede de los distintos tipos de ron, según la clasificación del estudio.</p></div><span class="tag">ORIGEN DEL CAMBIO</span></div>
+  <div class="table-wrap"><table class="table strategy-table"><thead><tr><th>Segmento de ron</th><th>Cambio Carúpano</th><th>Cambio Santa Teresa</th><th>Cambio Cacique</th></tr></thead><tbody>${segmentMatrix}</tbody></table></div>
+  <div class="strategy-segment-insight"><strong>La lectura clave:</strong> en ${esc(label(market))}, la aportación del segmento STANDARD cambia ${signed(carStandard)} para Carúpano, ${signed(stStandard)} para Santa Teresa y ${signed(cacStandard)} para Cacique. <strong>No todas las marcas crecen o retroceden por las mismas razones ni en los mismos segmentos.</strong></div>
+  <p class="chart-reading"><strong>Cómo interpretar la tabla:</strong> cada cambio es una contribución al mercado total de ron del mercado elegido. No es la participación dentro del segmento ni el crecimiento de ventas. Los segmentos se definen según NielsenIQ y deben verificarse antes de asociarlos con productos concretos.</p>
+ </section>
  <div class="section-title">CAPÍTULO 2 · GEOGRAFÍA Y CANALES</div>
  <section class="panel strategic-panel"><div class="panel-heading"><div><h2>El movimiento de las marcas, de un vistazo</h2><p>Comparación del cambio de participación en valor entre el año completo 2025 y 2026 hasta septiembre, en ocho cortes regionales y de canal.</p></div></div><div class="plot tall" id="strategicChannelPlot"></div><p class="chart-reading"><strong>Cómo leerlo:</strong> una barra a la derecha de cero indica un aumento de participación; a la izquierda, una disminución. Las marcas pueden moverse en direcciones diferentes en cada canal. No significa que una haya adquirido directamente las ventas de otra.</p></section>
  <section class="panel strategic-panel"><div class="panel-heading"><div><h2>¿Dónde cambia la posición competitiva de Carúpano?</h2><p>Comparamos el cambio de participación en valor de Carúpano, Santa Teresa y Cacique en cada mercado medido.</p></div><span class="tag">NO SUMAR CANALES</span></div>
