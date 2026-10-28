@@ -1,6 +1,8 @@
+import {buildStrategicView} from './strategic-intelligence.js';
 const COLORS={gold:'#c9a36d',white:'#ebe9e0',muted:'#919b96',grid:'#2b3230',red:'#e08d80',green:'#85b89c',blue:'#79989d'};
 const NATION='Total Venezuela1';
 const PAGES={
+ strategic:['08 / INTELIGENCIA ESTRATÉGICA','De Nielsen a <em>las decisiones de 2027.</em>','Cuatro capítulos para entender la competencia, descubrir diferencias entre mercados y justificar acciones comerciales concretas.'],
  overview:['01 / ENTENDER EL MERCADO','Qué está pasando <em>con Carúpano.</em>','Una explicación paso a paso de la posición de la marca, la competencia y los cambios que merecen atención.'],
  competition:['02 / OTRAS MARCAS','¿Quién compite <em>con nosotros?</em>','Conoce las marcas con mayor participación y compara su presencia y sus resultados con los de Carúpano.'],
  channels:['03 / DÓNDE SE VENDE','Cada canal cuenta <em>una historia.</em>','La situación de Carúpano cambia según la región y el tipo de tienda. Explora las diferencias sin sumar mercados que se solapan.'],
@@ -168,7 +170,7 @@ function explainCharts(){
  if(tableHints[state.page])document.querySelectorAll('#view .table-wrap').forEach(t=>t.insertAdjacentHTML('afterend',`<p class="table-reading"><strong>Cómo leer esta tabla:</strong> ${tableHints[state.page]}</p>`));
 }
 function explainDashboard(){
- const filters={overview:['marketSelect','metricSelect'],competition:['marketSelect','competitorSelect'],channels:[],distribution:['marketSelect','competitorSelect'],portfolio:['marketSelect'],radar:[],strategy:[]};
+ const filters={strategic:['marketSelect'],overview:['marketSelect','metricSelect'],competition:['marketSelect','competitorSelect'],channels:[],distribution:['marketSelect','competitorSelect'],portfolio:['marketSelect'],radar:[],strategy:[]};
  for(const name of ['marketSelect','metricSelect','competitorSelect']){
   const element=$(name);
   if(element?.closest('label'))element.closest('label').style.display=(filters[state.page]||[]).includes(name)?'':'none';
@@ -179,6 +181,21 @@ function explainDashboard(){
  $('view').insertAdjacentHTML('afterbegin',section);
  explainCharts();
 }
-function render(){state.charts.forEach(c=>c.dispose());state.charts=[];const [kick,title,desc]=PAGES[state.page];$('kicker').textContent=kick;$('pageTitle').innerHTML=title;$('pageDesc').textContent=desc;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x.dataset.page===state.page));({overview,competition,channels,distribution,portfolio,radar,strategy})[state.page]();explainDashboard();}
+function strategic(){
+ const report=buildStrategicView(state.rows,state.portfolio,state.market,state.competitor);
+ $('view').innerHTML=report.html;
+ for(const c of report.charts){chart(c.id,c.option);}
+ const b=$('copyStrategyBrief');
+ if(b)b.addEventListener('click',async ()=>{
+  try{
+   if(!navigator.clipboard?.writeText)throw new Error('El navegador no permite copiar automáticamente');
+   await navigator.clipboard.writeText(report.brief);
+   b.textContent='Resumen copiado';
+  }catch(e){
+   b.textContent='Usa la opción Exportar vista o copia el texto del informe';
+  }
+ });
+}
+function render(){state.charts.forEach(c=>c.dispose());state.charts=[];const [kick,title,desc]=PAGES[state.page];$('kicker').textContent=kick;$('pageTitle').innerHTML=title;$('pageDesc').textContent=desc;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x.dataset.page===state.page));({overview,strategic,competition,channels,distribution,portfolio,radar,strategy})[state.page]();explainDashboard();}
 function initialize(){const markets=state.meta.markets||[...new Set(state.rows.map(x=>x.market))];$('marketSelect').innerHTML=markets.map(m=>`<option value="${m}" ${m===NATION?'selected':''}>${readableMarket(m)}</option>`).join('');const national=sorted(NATION,'value');$('competitorSelect').innerHTML=national.filter(x=>x.brand!=='CARUPANO').map(r=>`<option value="${r.brand}" ${r.brand==='CACIQUE'?'selected':''}>${r.brand}</option>`).join('');document.querySelectorAll('.nav-button').forEach(b=>b.addEventListener('click',()=>{state.page=b.dataset.page;render()}));$('marketSelect').addEventListener('change',e=>{state.market=e.target.value;render()});$('metricSelect').addEventListener('change',e=>{state.metric=e.target.value;render()});$('competitorSelect').addEventListener('change',e=>{state.competitor=e.target.value;render()});$('exportBtn').addEventListener('click',()=>window.print());window.addEventListener('resize',()=>state.charts.forEach(c=>c.resize()));render()}
 async function main(){try{const results=await Promise.all(['data/market-brand.json','data/portfolio.json','data/metadata.json'].map(p=>fetch(p).then(r=>{if(!r.ok)throw new Error(`${p}: ${r.status}`);return r.json()})));[state.rows,state.portfolio,state.meta]=results;initialize()}catch(err){$('view').innerHTML=`<div class="notice"><strong>No se pudo cargar el dataset.</strong> ${err.message}. Ejecuta la transformación antes de publicar y utiliza un servidor web local (no abras el HTML con file://).</div>`;console.error(err)}}main();
