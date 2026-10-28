@@ -68,6 +68,10 @@ for(const target of ['regional','segments','premium','value','distributionMatrix
  assert.equal(context.__state.page,target,'Click must switch section: '+target);
  assert.equal(window.location.hash,target,'Browser URL hash must follow section');
  assert.ok(element('view').innerHTML.length>1000,'Section must render visible content');
+ if(target==='competition'){
+  assert.ok(!element('view').innerHTML.includes('scatterPlot'),'Eliminar matriz de puntos confusa en comparativa de marcas');
+  assert.ok(element('view').innerHTML.includes('¿Quién lidera el mercado'),'Mostrar ranking de marcas completo');
+ }
  if(target==='regional'){
   assert.ok(element('view').innerHTML.includes('INTELIGENCIA COMPETITIVA GEOGRÁFICA'));
   assert.ok(element('view').innerHTML.includes('regionTopChart'));

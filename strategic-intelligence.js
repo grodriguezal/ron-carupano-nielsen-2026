@@ -42,7 +42,15 @@ export function buildStrategicView(rows,portfolio,market,competitor){
  const axisStyle=chartStyle;
  const comps=leaders.map(b=>({...b,row:brand(market,b.name)})).filter(x=>x.row);
  const selectedPort=portfolio.filter(r=>r.market===market&&r.brand==='CARUPANO'&&r.segment!=null&&r.size_ml==null).sort((a,b)=>(value(b)||0)-(value(a)||0));
- const portfolioRows=selectedPort.map(r=>`<tr><td><strong>${esc(r.segment)}</strong></td><td>${f(value(r,'value',BEFORE))} %</td><td>${f(value(r))} %</td><td>${difference(movement(r))}</td></tr>`).join('');
+ const preciseShare=x=>x==null?'—':x!==0&&Math.abs(x)<0.01?f(x,4):f(x);
+ const mixShare=r=>c26>0&&value(r)!=null?100*value(r)/c26:null;
+ const formattedMix=x=>x==null?'—':x!==0&&Math.abs(x)<0.1?f(x,2):f(x,1);
+ const deltaPp=x=>x==null?'<span class="neutral">Sin datos</span>':`<span class="${x>0.005?'positive':x<-0.005?'negative':'neutral'}">${x>0?'+':''}${f(x)} pp</span>`;
+ const portfolioRows=selectedPort.map(r=>`<tr><td><strong>${esc(r.segment)}</strong></td><td>${preciseShare(value(r,'value',BEFORE))} %</td><td>${preciseShare(value(r))} %</td><td>${deltaPp(movement(r))}</td></tr>`).join('');
+ const leadingDeclines=selectedPort.filter(r=>movement(r)!=null&&movement(r)<-0.005).sort((a,b)=>movement(a)-movement(b)).slice(0,2);
+ const portfolioInsight=leadingDeclines.length
+  ?`Las mayores reducciones de aportación a la cuota se observan en ${leadingDeclines.map(r=>`${esc(r.segment)} (${f(movement(r))} pp)`).join(' y ')}. Esto identifica dónde se concentra el cambio, no su causa.`
+  :'No se observan reducciones de más de 0,005 puntos de participación en los segmentos disponibles.';
  const competitorSegment=(who,segment)=>portfolio.find(r=>r.market===market&&r.brand===who&&r.segment===segment&&r.size_ml==null);
  const segments=['STANDARD','PREMIUM','SUPER PREMIUM','ULTRA PREMIUM','OTROS RON'];
  const segmentShift=segments.map(seg=>({
@@ -122,8 +130,20 @@ export function buildStrategicView(rows,portfolio,market,competitor){
  <div class="chart-reading"><strong>Interpretación:</strong> un mercado con una caída importante en porcentaje no es necesariamente el que más dinero representa. Para establecer prioridades económicas faltan el tamaño de cada mercado y el margen comercial. Los totales de canal y los cortes regionales se solapan: no debemos sumarlos.</div></section>
  <section class="strategy-observation"><div><div class="flag">SEÑAL DE ALERTA</div><h3>Mercados donde caen participación y presencia</h3><p>${dual.length} de los ${marketStats.length-1} cortes específicos de esta tabla muestran ambas señales. Conviene empezar investigando ${esc(topStates)}, sin asumir que son los mercados de mayor valor económico.</p></div><div><div class="flag">SEÑAL PARA APRENDER</div><h3>Resultados favorables que conviene estudiar</h3><p>${positive.length?positive.map(x=>`${x.name}: ${signed(x.c)}`).join('; '):'No hay mercados específicos con un aumento de participación superior a 0,05 puntos en esta selección.'}.</p></div></section>
  <div class="section-title">CAPÍTULO 3 · PRODUCTOS Y POSICIONAMIENTO</div>
- <section class="grid2 strategic-section"><div class="panel"><div class="panel-heading"><div><h2>¿Qué segmentos aportan al mercado?</h2><p>Contribución de los tipos de ron de Carúpano a la participación total del mercado elegido.</p></div></div><div class="plot" id="strategicPortfolio"></div><p class="chart-reading"><strong>Cómo leerlo:</strong> los segmentos son aportaciones al total de ron vendido en este mercado, no cuotas calculadas dentro de cada segmento.</p></div>
- <div class="panel"><div class="panel-heading"><div><h2>Composición del portafolio</h2><p>Resultados según la clasificación del estudio NielsenIQ.</p></div></div><div class="table-wrap"><table class="table"><thead><tr><th>Segmento</th><th>2025 completo</th><th>2026 hasta septiembre</th><th>Cambio</th></tr></thead><tbody>${portfolioRows||'<tr><td colspan="4">Sin desglose disponible para este mercado.</td></tr>'}</tbody></table></div><p class="table-reading"><strong>No sacar conclusiones prematuras:</strong> cambios en clasificación, formatos o disponibilidad pueden afectar la lectura. No son ventas por producto ni márgenes, y no justifican por sí solos cambios de precio.</p></div></section>
+ <section class="grid2 strategic-section portfolio-clarity">
+  <div class="panel">
+   <div class="panel-heading"><div><h2>¿Cómo se reparte la cuota de Carúpano entre segmentos?</h2><p>Distribución del 100 % del valor vendido por Carúpano entre los segmentos NielsenIQ del mercado elegido, enero–septiembre 2026.</p></div></div>
+   <div class="portfolio-total"><span>PARTICIPACIÓN TOTAL DE CARÚPANO EN EL MERCADO</span><strong>${f(c26)} %</strong><small>del valor total de ron medido</small></div>
+   <div class="plot portfolio-mix-chart" id="strategicPortfolio"></div>
+   <p class="chart-reading"><strong>Cómo leerlo:</strong> 100 % representa solo a Carúpano. Un segmento con 58 % significa que aporta aproximadamente 58 de cada 100 unidades de valor de Carúpano, <strong>no</strong> que Carúpano tenga el 58 % de ese segmento en el mercado.</p>
+  </div>
+  <div class="panel">
+   <div class="panel-heading"><div><h2>¿Qué segmentos explican el cambio de participación?</h2><p>Aportación de cada segmento a la cuota de Carúpano sobre <strong>todo el mercado de ron</strong>. La última columna mide cambios en puntos porcentuales (pp).</p></div></div>
+   <div class="table-wrap"><table class="table portfolio-shift-table"><thead><tr><th>Segmento</th><th>2025 completo</th><th>2026 hasta sep.</th><th>Cambio (pp)</th></tr></thead><tbody>${portfolioRows||'<tr><td colspan="4">Sin desglose disponible para este mercado.</td></tr>'}</tbody></table></div>
+   <p class="portfolio-takeaway"><strong>Lectura principal:</strong> ${portfolioInsight}</p>
+   <p class="table-reading"><strong>Importante:</strong> no confundir esta tabla con la composición interna del gráfico de la izquierda. Los cambios son puntos de cuota sobre todo el mercado NielsenIQ; 2025 completo y 2026 hasta septiembre tienen duraciones diferentes. Un segmento con menos cuota no demuestra menor disponibilidad, precio o demanda sin otros datos.</p>
+  </div>
+ </section>
  <div class="section-title">CAPÍTULO 4 · PRIORIDADES DE ACTUACIÓN</div>
  <section class="strategic-actions-intro"><p class="strategic-kicker">DE LOS HALLAZGOS A LAS DECISIONES</p><h2>Cuatro líneas de actuación a partir de los datos</h2><p>Estas propuestas están ancladas en evidencia del estudio, pero son <strong>hipótesis y decisiones recomendadas</strong>, no iniciativas que Nielsen haya demostrado rentables. Las acciones consideran recursos limitados y priorizan la disponibilidad, el producto y la ejecución comercial antes que grandes presupuestos en efectivo.</p></section>
  <div class="strategy-action-grid">${actionHTML}</div>
@@ -132,7 +152,7 @@ export function buildStrategicView(rows,portfolio,market,competitor){
  const charts=[
   {id:'strategicCompetitors',option:{tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>`${f(v)} %`},legend:{bottom:0,textStyle:{color:'#a9b4ad'},data:['2025 completo','2026 hasta septiembre']},grid:{left:116,right:18,top:9,bottom:44},xAxis:{type:'value',...axisStyle,axisLabel:{color:'#a9b4ad',formatter:v=>`${v} %`}},yAxis:{type:'category',data:comps.slice().reverse().map(x=>x.name),...axisStyle},series:[{name:'2025 completo',type:'bar',barMaxWidth:14,itemStyle:{color:'#586466'},data:comps.slice().reverse().map(x=>value(x.row,'value',BEFORE))},{name:'2026 hasta septiembre',type:'bar',barMaxWidth:14,itemStyle:{color:'#d9b778'},data:comps.slice().reverse().map(x=>value(x.row))}]}},
   {id:'strategicChannelPlot',option:{tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>signed(v)},legend:{bottom:0,textStyle:{color:'#adb8ad'},data:['Carúpano','Santa Teresa','Cacique']},grid:{left:215,right:31,top:8,bottom:45},xAxis:{type:'value',...axisStyle,axisLabel:{color:'#aeb9af',formatter:v=>f(v,0)}},yAxis:{type:'category',data:regional.map(x=>x.name),...axisStyle,axisLabel:{color:'#c1c9bc',fontSize:10}},series:[{type:'bar',name:'Carúpano',barMaxWidth:10,itemStyle:{color:'#e1ba7a'},data:regional.map(x=>x.c)},{type:'bar',name:'Santa Teresa',barMaxWidth:10,itemStyle:{color:'#9bafb0'},data:regional.map(x=>x.s)},{type:'bar',name:'Cacique',barMaxWidth:10,itemStyle:{color:'#819a86'},data:regional.map(x=>x.q)}]}},
-  {id:'strategicPortfolio',option:{tooltip:{trigger:'axis',valueFormatter:v=>`${f(v)} %`},grid:{left:126,right:20,top:8,bottom:20},xAxis:{type:'value',...axisStyle,axisLabel:{color:'#a9b4ad',formatter:v=>v+' %'}},yAxis:{type:'category',data:selectedPort.slice().reverse().map(x=>x.segment),...axisStyle,axisLabel:{fontSize:10,color:'#c0c7bf'}},series:[{type:'bar',barMaxWidth:22,itemStyle:{color:'#b9a17e'},data:selectedPort.slice().reverse().map(x=>value(x))}]}}
+  {id:'strategicPortfolio',option:{tooltip:{trigger:'item',formatter:p=>`${esc(p.name)}: ${formattedMix(p.value)} % del valor de Carúpano`},grid:{left:132,right:87,top:14,bottom:36},xAxis:{type:'value',min:0,max:100,interval:25,...axisStyle,axisLabel:{color:'#a9b4ad',formatter:v=>v+' %'}},yAxis:{type:'category',data:selectedPort.slice().reverse().map(x=>x.segment),...axisStyle,axisLabel:{fontSize:11,color:'#c0c7bf'}},series:[{type:'bar',barMaxWidth:21,itemStyle:{color:'#c5b783',borderRadius:[0,3,3,0]},label:{show:true,position:'right',distance:8,color:'#e8dfca',fontSize:11,formatter:p=>formattedMix(p.value)+' %'},data:selectedPort.slice().reverse().map(r=>({value:mixShare(r),name:r.segment}))}]}}
  ];
  return {html,charts,brief,stats:{market,observations:marketStats.length,actions:actions.length,carupanoChange:decBy}};
 }
