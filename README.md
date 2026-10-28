@@ -2,11 +2,11 @@
 
 **NielsenIQ · Ron Venezuela · 2025 completo / 2026 YTD septiembre**
 
-Plataforma de inteligencia de mercado para Ron Carúpano, con **14 secciones navegables** y módulos avanzados de segmentos, competencia premium, posicionamiento relativo, distribución, formatos y movimientos de marcas. La integración presupuestaria del BP2027 permanece fuera de esta actualización.
+Plataforma de inteligencia de mercado para Ron Carúpano, con **14 secciones navegables** y módulos avanzados de segmentos, competencia premium, posicionamiento relativo, distribución, formatos y movimientos de marcas.
 
 ## Detalles de las tablas sin cambiar de sección
 
-En **Diagnóstico estratégico 2027**, **Competencia por región** y la tabla de segmentos de **Estructura del mercado**, los botones ahora indican **«Ver detalle aquí»**. Al pulsarlos:
+En **Diagnóstico estratégico**, **Competencia por región** y la tabla de segmentos de **Estructura del mercado**, los botones ahora indican **«Ver detalle aquí»**. Al pulsarlos:
 
 - Aparece una fila ampliada inmediatamente debajo de la selección, sin navegar a otra sección ni hacer saltar la página al inicio.
 - Se muestra la posición de Carúpano, sus indicadores y los cinco competidores del mismo mercado; para los segmentos, la cuota de las marcas dentro del segmento seleccionado.
@@ -17,7 +17,7 @@ Los mercados mantienen su propio denominador; los períodos 2025 y 2026 siguen s
 
 ## Inteligencia de mercado avanzada — seis dashboards añadidos
 
-Desde la versión 1.2 se incorporan **seis módulos de inteligencia NielsenIQ**. No incluyen escenarios de cuota, presupuestos ni integración con el Business Plan 2027.
+Desde la versión 1.2 se incorporan **seis módulos de inteligencia NielsenIQ**. No incluyen simulaciones de participación ni modelos presupuestarios.
 
 | Módulo | Pregunta de negocio | Nivel de cálculo |
 | --- | --- | --- |
@@ -75,7 +75,7 @@ Abrir `http://localhost:8000`. La interfaz utiliza ECharts a través de CDN. Git
 Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empieza por **qué muestran las cifras, qué significan y qué conviene investigar o hacer**. Debajo de cada gráfico hay una guía para interpretarlo. En la parte superior aparece **«¿No conoces Nielsen ni el sector? Empieza aquí»**, que explica términos con ejemplos.
 
 - **Resumen ejecutivo:** descubre la situación de la marca y los cambios de participación.
-- **Diagnóstico estratégico 2027:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones posibles para el Business Plan.
+- **Diagnóstico estratégico:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones e investigaciones comerciales.
 - **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
 - **Competencia por región:** identifica los cinco principales competidores de cada región, ciudad o canal incluido en Nielsen, junto con los resultados de Carúpano.
 - **Estructura del mercado:** descubre el peso de cada segmento en el mercado total.
@@ -117,7 +117,7 @@ La sección **Competencia por región** muestra la posición de Carúpano frente
 
 **Importante:** el corte `T Caracas Alimentos_Abs` no es todo el mercado de Caracas. La nomenclatura procede del archivo de NielsenIQ y representa solo el universo de medición correspondiente al corte especial de alimentos. Capital no debe tratarse automáticamente como sinónimo de la ciudad de Caracas. No se agregan regiones ni canales solapados ni se convierten participaciones relativas en ventas absolutas.
 
-Desde el capítulo de canales del **Diagnóstico estratégico 2027** se puede acceder mediante el botón **Ver 5 rivales**. El comparador permite cambiar de mercado sin salir de la sección.
+Desde el capítulo de canales del **Diagnóstico estratégico** se puede acceder mediante el botón **Ver 5 rivales**. El comparador permite cambiar de mercado sin salir de la sección.
 
 ## Corrección de la conciliación del portafolio
 
@@ -131,7 +131,7 @@ En los 21 mercados actuales la diferencia observada se mantiene dentro del marge
 
 ## Cambios de navegación
 
-Se ha **retirado completamente el módulo de escenarios hipotéticos 2027**, tanto de la navegación como de la lógica y el código de simulación. Se mantiene el **Diagnóstico estratégico 2027**, que relaciona hallazgos reales de NielsenIQ con acciones para el Business Plan sin construir pronósticos no fundamentados.
+Se ha retirado el módulo de escenarios hipotéticos, tanto de la navegación como de la lógica de simulación. El **Diagnóstico estratégico** relaciona hallazgos medidos por NielsenIQ con recomendaciones de investigación y ejecución comercial, sin construir pronósticos no fundamentados.
 
 ### Validación de la comparación regional
 
@@ -142,14 +142,14 @@ python tests/test_data.py
 
 Las pruebas verifican los 15 cortes regionales y especiales, la selección correcta de los cinco competidores (sin incluir Carúpano entre ellos), el acceso a la vista regional, la ausencia del módulo de escenarios y la conciliación del portafolio.
 
-## Nueva sección: Diagnóstico estratégico 2027
+## Nueva sección: Diagnóstico estratégico
 
-La sección **Diagnóstico estratégico 2027** transforma las métricas NielsenIQ en una narrativa ejecutiva organizada por cuatro capítulos:
+La sección **Diagnóstico estratégico** transforma las métricas NielsenIQ en una narrativa ejecutiva organizada por cuatro capítulos:
 
 1. **Competidores:** cuánto cambia la participación de Carúpano, Santa Teresa y Cacique, cómo evoluciona la distancia y qué segmentos explican matemáticamente los cambios de cuota (por ejemplo, el aumento del segmento STANDARD de Santa Teresa); sin atribuir automáticamente las ganancias de una marca a las pérdidas de otra.
 2. **Canales y regiones:** comparación visual de los cambios de participación y tabla interactiva para explorar cada corte, sin sumar mercados superpuestos.
 3. **Productos y posicionamiento:** contribución de los segmentos de Carúpano al total de ron vendido y advertencias sobre cambios de clasificación, mezcla y formatos.
-4. **Plan 2027:** cuatro propuestas diferenciadas, con hallazgo medido, significado, acción, indicador de seguimiento, información interna faltante y responsables sugeridos.
+4. **Prioridades de actuación:** cuatro propuestas diferenciadas, con hallazgo medido, significado, acción, indicador de seguimiento, información interna faltante y responsables sugeridos.
 
 **Casos comerciales prioritarios para estudiar:** autoservicios de Capital (pérdida simultánea de cuota y cobertura), licorerías (mejora de distribución numérica y caída de participación), canal tradicional de Centro + Centro Occidente (participación creciente) y contribución del portafolio de segmentos premium.
 
@@ -164,7 +164,7 @@ npm test
 python tests/test_data.py
 ```
 
-El paquete JavaScript no necesita dependencias instaladas. Las pruebas de la sección estratégica comprueban los 21 cortes de mercado, las tres visualizaciones, la presencia de las cuatro acciones BP2027 y las referencias numéricas nacionales. GitHub Actions ejecuta las comprobaciones en cada actualización de `main`.
+El paquete JavaScript no necesita dependencias instaladas. Las pruebas de la sección estratégica comprueban los 21 cortes de mercado, las tres visualizaciones, la presencia de cuatro acciones propuestas y las referencias numéricas nacionales. GitHub Actions ejecuta las comprobaciones en cada actualización de `main`.
 
 
 ## Identidad visual oficial
@@ -182,7 +182,6 @@ Los colores de acento siguen el Brand Hub: dorado principal de referencia `#8475
 - Distribución numérica/ponderada no son métricas aditivas.
 - Las regiones/canales pueden solaparse y tienen distintos denominadores.
 - Las alertas son hipótesis y no pruebas de causalidad.
-- El simulador 2027 explora metas de participación, no forecasts.
 
 ## Privacidad y licencia
 
