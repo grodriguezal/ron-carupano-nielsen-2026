@@ -183,3 +183,42 @@ body,button,select,input,table,.nav-button,.sidebar,.topbar,.kicker,.eyebrow,.su
 @media(max-width:1000px){.regional-charts{grid-template-columns:1fr}.regional-controls{flex-direction:column;align-items:stretch}.regional-controls select{max-width:100%;min-width:0}}
 @media(max-width:760px){.regional-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.regional-kpi{padding:13px}.regional-kpi strong{font-size:24px}.regional-intro-head{padding:20px}.regional-intro-head h2{font-size:30px}.regional-charts .plot{height:340px}}
 @media print{.regional-controls,.region-jump{display:none!important}.regional-intro-head,.regional-kpi,.regional-insight{break-inside:avoid}}
+
+/* Advanced NielsenIQ market intelligence | 2026 */
+#nav{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:3px;overscroll-behavior:contain;scrollbar-color:#585245 transparent;scrollbar-width:thin}
+.nav-button{flex-shrink:0;min-height:43px}
+.nav-section-title{padding:19px 15px 7px;color:#9f997f;font:700 9px/1.4 var(--font-secondary);letter-spacing:.18em;flex-shrink:0}
+.side-footer{flex-shrink:0;padding-top:12px;padding-bottom:0}
+.mi-controls{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;justify-content:space-between;border:1px solid #474535;background:linear-gradient(120deg,#242720,#171d1a);padding:18px 21px;border-radius:12px;margin-bottom:17px}
+.mi-controls label{display:flex;flex-direction:column;gap:8px;font-size:11px;color:#eee1c6;font-weight:700}
+.mi-controls select{padding:11px 12px;background:#111917;color:#f5eddb;border:1px solid #71634b;border-radius:7px;min-width:230px;max-width:100%;font:500 12px var(--font-secondary)}
+.mi-controls>span{color:#a4ada3;line-height:1.7;font-size:11px;max-width:470px}
+.mi-brief{border:1px solid #5a4d35;background:linear-gradient(137deg,#25241d,#171c1a);border-radius:13px;padding:25px;margin-bottom:14px}
+.mi-eyebrow{font:700 10px/1.4 var(--font-secondary);color:var(--gold);letter-spacing:.17em}
+.mi-brief h2{font:600 clamp(29px,3vw,42px)/1.13 var(--font-display);letter-spacing:-.025em;margin:8px 0 23px;max-width:1080px}
+.mi-brief-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mi-brief-grid article{background:#191d1b;border:1px solid #41453a;border-radius:10px;padding:17px 18px}
+.mi-brief-grid strong{color:#e9d1a7;font-size:11px;display:block;letter-spacing:.02em}
+.mi-brief-grid p{font-size:12px;line-height:1.8;color:#c5cec3;margin:8px 0 0}
+.mi-stat-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:15px 0}
+.mi-stat{border:1px solid #3e4640;border-radius:11px;background:linear-gradient(160deg,#1c2220,#151b19);padding:18px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mi-stat span{font-size:10px;color:#c3c9c0;text-transform:uppercase;letter-spacing:.06em;line-height:1.5;min-height:27px}
+.mi-stat strong{font:700 clamp(19px,2.3vw,29px)/1.14 var(--font-secondary);letter-spacing:-.04em;color:#f2eee4;overflow-wrap:anywhere}
+.mi-stat small{font-size:11px;line-height:1.6;color:#a6b3a7}
+.mi-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin:16px 0}
+.mi-panel{margin:15px 0}
+.mi-panel h2{font:600 26px/1.18 var(--font-display);letter-spacing:-.01em}
+.mi-panel .mi-plot{height:400px}
+.mi-table{min-width:790px}
+.mi-table td,.mi-table th{white-space:normal;line-height:1.65}
+.mi-table td:first-child{min-width:150px}
+.mi-table td:first-child small{display:block;color:#a4b0a6;font-size:10px}
+.mi-under-table{padding:13px 0 0;color:#abb9ad;font-size:11px!important;line-height:1.7!important}
+.mi-caveat{margin:15px 0 28px;background:#202621;border-left:3px solid #ad986c;border-radius:4px;padding:17px 20px;font-size:12px;line-height:1.8;color:#bfcabd}
+.mi-caveat strong{color:#f2dfb7}
+.mi-formula{padding:17px 21px;border:1px solid #665539;border-radius:10px;background:#26231e;font-size:13px;line-height:1.7;color:#d5d2c7}
+.mi-formula strong{color:#f3dbaf}
+.mi-empty{padding:20px 10px;color:#b7beb4}
+@media(max-width:1100px){.mi-brief-grid{grid-template-columns:1fr}.mi-stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}.mi-grid{grid-template-columns:1fr}}
+@media(max-width:760px){#nav{display:flex;flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:unset;white-space:nowrap;gap:7px;padding-bottom:10px}.nav-section-title{display:none}.mi-controls{padding:14px}.mi-controls label,.mi-controls select{width:100%;min-width:0}.mi-brief{padding:19px}.mi-brief h2{font-size:30px}.mi-stat-row{gap:8px}.mi-stat{padding:12px}.mi-stat strong{font-size:21px}.mi-panel .mi-plot{height:330px}}
+@media print{#nav,.mi-controls{display:none!important}.mi-brief,.mi-stat,.mi-panel{break-inside:avoid}}
