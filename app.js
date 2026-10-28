@@ -1,4 +1,4 @@
-import {buildStrategicView} from './strategic-intelligence.js?v=20261028-inline-v4';
+import {buildStrategicView} from './strategic-intelligence.js?v=20261028-nobp-v5';
 import {buildRegionalView} from './regional-intelligence.js?v=20261028-inline-v4';
 import {buildAdvancedView} from './advanced-intelligence.js?v=20261028-inline-v4';
 const COLORS={gold:'#c5b783',white:'#ebe9e0',muted:'#919b96',grid:'#2b3230',red:'#e08d80',green:'#85b89c',blue:'#79989d'};
@@ -10,7 +10,7 @@ const PAGES={
  distributionMatrix:['12 / DIAGNÓSTICO DE DISTRIBUCIÓN','¿La marca llega <em>a las tiendas adecuadas?</em>','Cruza la presencia numérica y ponderada con los cambios de participación, sin suponer causalidad.'],
  formats:['13 / INTELIGENCIA DE FORMATOS','Entender lo que pasa <em>con 700 y 750 ml.</em>','Qué formatos aportan participación, cómo cambia su peso y dónde conviene revisar códigos y disponibilidad.'],
  movements:['14 / MOVIMIENTOS COMPETITIVOS','¿Quién gana y pierde <em>participación?</em>','Identifica desplazamientos por marca y segmento sin atribuir las ganancias de una marca a pérdidas de otra.'],
- strategic:['08 / INTELIGENCIA ESTRATÉGICA','De Nielsen a <em>las decisiones de 2027.</em>','Cuatro capítulos para entender la competencia, descubrir diferencias entre mercados y justificar acciones comerciales concretas.'],
+ strategic:['08 / INTELIGENCIA ESTRATÉGICA','De Nielsen a <em>las decisiones.</em>','Cuatro capítulos para entender la competencia, descubrir diferencias entre mercados y justificar acciones comerciales concretas.'],
  overview:['01 / ENTENDER EL MERCADO','Qué está pasando <em>con Carúpano.</em>','Una explicación paso a paso de la posición de la marca, la competencia y los cambios que merecen atención.'],
  regional:['03 / COMPETENCIA POR REGIÓN','¿Quién lidera <em>cada región?</em>','Compara a Carúpano con los cinco competidores principales en cada región, canal y ciudad disponible.'],
  competition:['02 / OTRAS MARCAS','¿Quién compite <em>con nosotros?</em>','Conoce las marcas con mayor participación y compara su presencia y sus resultados con los de Carúpano.'],
