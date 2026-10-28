@@ -22,7 +22,8 @@ for(const market of ids){
  assert.equal(report.charts.length,2);
  assert.ok(report.html.includes('regionTopChart'));
  assert.ok(report.html.includes('regionShiftChart'));
- assert.ok(report.html.includes('data-region-market'));
+ assert.ok(report.html.includes('data-inline-market'));
+ assert.ok(!report.html.includes('data-region-market'), 'No jump-to-top action should remain');
  assert.ok(report.html.includes('participación en valor'));
  assert.ok(!report.html.includes('NaN'));
  assert.ok(report.meta.carRank>0);
