@@ -5,6 +5,6 @@
   "type": "module",
   "description": "Explorador interactivo de NielsenIQ Venezuela para Ron Carúpano",
   "scripts": {
-    "test": "node --check app.js && node --check strategic-intelligence.js && node --check regional-intelligence.js && node tests/test_strategic.mjs && node tests/test_regional.mjs"
+    "test": "node --check app.js && node --check strategic-intelligence.js && node --check regional-intelligence.js && node tests/test_strategic.mjs && node tests/test_regional.mjs && node tests/test_navigation.mjs"
   }
 }
