@@ -4,6 +4,17 @@
 
 Plataforma de inteligencia de mercado para Ron Carúpano, con **14 secciones navegables** y módulos avanzados de segmentos, competencia premium, posicionamiento relativo, distribución, formatos y movimientos de marcas. La integración presupuestaria del BP2027 permanece fuera de esta actualización.
 
+## Detalles de las tablas sin cambiar de sección
+
+En **Diagnóstico estratégico 2027**, **Competencia por región** y la tabla de segmentos de **Estructura del mercado**, los botones ahora indican **«Ver detalle aquí»**. Al pulsarlos:
+
+- Aparece una fila ampliada inmediatamente debajo de la selección, sin navegar a otra sección ni hacer saltar la página al inicio.
+- Se muestra la posición de Carúpano, sus indicadores y los cinco competidores del mismo mercado; para los segmentos, la cuota de las marcas dentro del segmento seleccionado.
+- El mismo botón cambia a **«Ocultar detalle»** para contraer la información.
+- Al abrir otra fila se cierra la anterior, manteniendo una lectura clara de la tabla.
+
+Los mercados mantienen su propio denominador; los períodos 2025 y 2026 siguen sin ser comparaciones interanuales de igual duración. `tests/test_inline_details.mjs` comprueba apertura, cierre y contenido de los detalles. Los assets usan un identificador de versión para evitar código antiguo en caché.
+
 ## Inteligencia de mercado avanzada — seis dashboards añadidos
 
 Desde la versión 1.2 se incorporan **seis módulos de inteligencia NielsenIQ**. No incluyen escenarios de cuota, presupuestos ni integración con el Business Plan 2027.
