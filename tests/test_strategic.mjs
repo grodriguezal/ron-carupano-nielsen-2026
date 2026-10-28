@@ -1,8 +1,22 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { buildStrategicView } from '../strategic-intelligence.js';
 
 const fromJSON = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+
+const dashboardHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const dashboardCss = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+const dashboardJs = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
+assert.ok(dashboardHtml.includes('assets/branding/ron-carupano-logo-gold.webp'), 'Official Ron Carúpano signature must be displayed');
+assert.ok(!dashboardHtml.includes('class="symbol"'), 'Old placeholder monogram must not appear');
+assert.ok(dashboardHtml.includes('family=Inter'), 'Inter should load for UI and data');
+assert.ok(dashboardCss.includes("'Adobe Garamond Pro'"), 'Official primary display font should be declared');
+assert.ok(dashboardCss.includes("--font-secondary:'Inter'"), 'Official secondary font should be declared');
+assert.ok(!/Manrope|DM Sans/.test(dashboardCss), 'Legacy typography must be removed');
+assert.ok(dashboardJs.includes("fontFamily:'Inter"), 'Charts should use Inter');
+assert.ok(existsSync(new URL('../assets/branding/ron-carupano-logo-gold.webp', import.meta.url)), 'Gold logo must be bundled');
+assert.ok(existsSync(new URL('../assets/branding/ron-carupano-logo-black-vertical.webp', import.meta.url)), 'Black logo must be bundled');
+
 const rows = fromJSON('../data/market-brand.json');
 const portfolio = fromJSON('../data/portfolio.json');
 const metadata = fromJSON('../data/metadata.json');
