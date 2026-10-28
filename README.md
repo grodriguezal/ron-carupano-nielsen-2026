@@ -2,7 +2,41 @@
 
 **NielsenIQ · Ron Venezuela · 2025 completo / 2026 YTD septiembre**
 
-Dashboard de inteligencia competitiva para Ron Carúpano: **Resumen ejecutivo, Diagnóstico estratégico 2027, Competidores, Competencia por región, Canales, Distribución, Portafolio y Oportunidades de mejora**.
+Plataforma de inteligencia de mercado para Ron Carúpano, con **14 secciones navegables** y módulos avanzados de segmentos, competencia premium, posicionamiento relativo, distribución, formatos y movimientos de marcas. La integración presupuestaria del BP2027 permanece fuera de esta actualización.
+
+## Inteligencia de mercado avanzada — seis dashboards añadidos
+
+Desde la versión 1.2 se incorporan **seis módulos de inteligencia NielsenIQ**. No incluyen escenarios de cuota, presupuestos ni integración con el Business Plan 2027.
+
+| Módulo | Pregunta de negocio | Nivel de cálculo |
+| --- | --- | --- |
+| **Estructura del mercado** | ¿Qué segmentos representan mayor o menor proporción del mercado en cada región? | Suma de aportaciones por marca-segmento, sin volver a agregar tamaños |
+| **Competencia por segmento** | ¿Qué cuota tiene Carúpano *dentro* de Standard, Premium, Super Premium y demás segmentos frente a sus rivales? | Aportación marca-segmento ÷ total del segmento en el mismo mercado |
+| **Posicionamiento de valor** | ¿Qué marcas aportan relativamente más valor que volumen? | Índice 100 × participación en valor ÷ participación en volumen |
+| **Diagnóstico de distribución** | ¿Dónde coinciden cambios de participación y presencia numérica o ponderada? | Señales descriptivas por mercado; no mide causalidad |
+| **Inteligencia de formatos** | ¿Qué aporte tienen las presentaciones de 700, 750 y otros tamaños, por segmento? | Aportación marca-segmento-tamaño al total; no representa un SKU comercial |
+| **Movimientos competitivos** | ¿Qué marcas ganan o pierden peso relativo y qué segmentos explican su cambio? | Cambios de participación por marca y segmentación |
+
+### Criterios de interpretación
+
+- El denominador de **participación dentro de Super Premium** es el valor del segmento Super Premium, mientras que una **aportación de Super Premium al mercado** usa el valor total de ron. Nunca se deben confundir.
+- La base compara **el año completo de 2025 y el acumulado a septiembre de 2026**. Las diferencias entre participaciones se muestran en puntos porcentuales, pero no constituyen crecimiento interanual homogéneo en ventas.
+- El índice de **valor/volumen** tiene como referencia 100 para la categoría. Es un indicador relativo que puede reflejar cambios en precios o mezcla de formatos: **no es un precio real ni permite calcular rentabilidad**. Para evitar ratios extremos, su ranking principal limita las marcas a al menos 0,3 % de participación en valor; Carúpano siempre está incluido en el gráfico de referencia.
+- Los **mercados y canales NielsenIQ se solapan** y las distribuciones no son aditivas. No se suman participaciones ni se extrapolan a valor económico absoluto.
+- Un cambio de participación de una marca puede explicarse por el peso del segmento y por su participación dentro del segmento. El dashboard ofrece ambas lecturas, sin afirmar transferencia de consumidores.
+- Los cambios entre formatos de 700 y 750 mililitros no demuestran por sí solos cambios de consumo: es necesario comprobar distribución, codificación, referencias y disponibilidad.
+
+### Validación de los nuevos módulos
+
+`tests/test_advanced.mjs` comprueba las **126 combinaciones** de seis dashboards por los 21 cortes de mercado, además de los puntos de referencia:
+
+- Standard nacional: **62,4091 %** del valor de ron en 2026 hasta septiembre.
+- Carúpano dentro de Super Premium nacional: **14,6738 %**, calculado sobre el segmento.
+- Índice relativo de Carúpano en valor/volumen: **122,56**.
+- Conciliación de aportaciones del portafolio por segmento y tamaño.
+- Ranking de marcas y señales de distribución calculadas sin mezclar canales.
+
+`tests/test_navigation.mjs` comprueba la navegación entre las **14 secciones**, incluidos los nuevos accesos directos. Todo se ejecuta al lanzar `npm test`, integrado en GitHub Actions.
 
 ## Datos
 
@@ -33,6 +67,12 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 - **Diagnóstico estratégico 2027:** analiza la competencia, los canales y los segmentos, y conecta cada evidencia con decisiones posibles para el Business Plan.
 - **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
 - **Competencia por región:** identifica los cinco principales competidores de cada región, ciudad o canal incluido en Nielsen, junto con los resultados de Carúpano.
+- **Estructura del mercado:** descubre el peso de cada segmento en el mercado total.
+- **Competencia por segmento:** compara cuotas dentro de Standard, Premium, Super Premium y otras clasificaciones.
+- **Posicionamiento de valor:** compara el índice valor/volumen de Carúpano y otras marcas.
+- **Diagnóstico de distribución:** identifica señales al cruzar presencia y cuota.
+- **Inteligencia de formatos:** analiza tamaños de 700 ml, 750 ml y otros formatos.
+- **Movimientos competitivos:** rastrea ganancias y pérdidas de participación por marca.
 - **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
 - **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.
 - **Productos y formatos:** analiza qué aporta cada segmento del portafolio al mercado.
@@ -42,7 +82,7 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 
 ## Navegación y acceso directo
 
-El menú del dashboard tiene ocho secciones interactivas. Tras añadir **Competencia por región**, se corrigió un problema potencial de caché: un navegador podía mostrar un `index.html` nuevo junto a un `app.js` anterior, causando que el botón fuera visible pero no respondiera.
+El menú del dashboard tiene catorce secciones interactivas. Tras añadir **Competencia por región**, se corrigió un problema potencial de caché: un navegador podía mostrar un `index.html` nuevo junto a un `app.js` anterior, causando que el botón fuera visible pero no respondiera.
 
 Los scripts y estilos se cargan con identificadores de versión coherentes. La sección regional permite ahora acceso directo mediante la URL:
 
