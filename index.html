@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="description" content="Carúpano Market Intelligence — Centro de análisis NielsenIQ Venezuela."/>
+<title>CARÚPANO | MARKET INTELLIGENCE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+<script defer src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<script type="module" src="app.js"></script></head>
+<body><div class="shell">
+ <aside class="sidebar">
+  <div class="brand"><div class="symbol">C<span>·</span></div><div><strong>CARÚPANO</strong><small>MARKET INTELLIGENCE</small></div></div>
+  <div class="nav-heading">EXPLORAR</div>
+  <nav id="nav">
+   <button class="nav-button active" data-page="overview"><span class="nav-icon">◫</span>Executive Center</button>
+   <button class="nav-button" data-page="competition"><span class="nav-icon">⌁</span>Competidores</button>
+   <button class="nav-button" data-page="channels"><span class="nav-icon">▦</span>Canales y mercados</button>
+   <button class="nav-button" data-page="distribution"><span class="nav-icon">◈</span>Distribución</button>
+   <button class="nav-button" data-page="portfolio"><span class="nav-icon">◩</span>Portafolio y mix</button>
+   <button class="nav-button" data-page="radar"><span class="nav-icon">◇</span>Opportunity Radar</button>
+   <button class="nav-button" data-page="strategy"><span class="nav-icon">◎</span>Strategy Lab 2027</button>
+  </nav>
+  <div class="side-footer"><span class="status-dot"></span> NIQ RETAIL MEASUREMENT<br/><small>Exportación: 27 OCT 2026</small><p>2025 completo vs. 2026 YTD sep. No equivale a YoY homogéneo.</p></div>
+ </aside>
+ <main class="main">
+  <header class="topbar"><div class="eyebrow">RON CARÚPANO <span class="sep">/</span> VENEZUELA <span class="sep">/</span> NIELSENIQ</div><div class="top-actions"><span class="data-label"><span class="status-dot"></span>DATA CONNECTED</span><button class="ghost" id="exportBtn">↓ Exportar vista</button></div></header>
+  <div class="content"><div class="headline-row"><div><p class="kicker" id="kicker">MARKET PERFORMANCE / 01</p><h1 id="pageTitle">Decisiones que comienzan <em>con datos.</em></h1><p class="subline" id="pageDesc">Una lectura ejecutiva del mercado de ron en Venezuela. No solo dónde estamos, sino dónde debemos actuar.</p></div><div class="period">NIELSENIQ <span>2025 → SEP 2026</span></div></div>
+  <div class="filterbar"><label>Mercado <select id="marketSelect"></select></label><label>Métrica <select id="metricSelect"><option value="value">Participación en valor</option><option value="volume">Participación en volumen</option><option value="numeric_distribution">Distribución numérica</option><option value="weighted_distribution">Distribución ponderada</option></select></label><label>Marca de comparación <select id="competitorSelect"></select></label><span class="filter-hint">Diferencias en puntos porcentuales (pp)</span></div>
+  <section id="view"><div class="loading">Preparando lectura de mercado…</div></section>
+  <div class="footnote"><strong>LECTURA RESPONSABLE DE DATOS</strong> El año 2025 completo y el acumulado a septiembre de 2026 no son ventanas idénticas. Las cuotas son porcentajes, no ventas absolutas. Canales/regiones pueden solaparse. La distribución no es aditiva. <span>© 2026 Nielsen Consumer LLC.</span></div>
+  </div>
+ </main></div></body></html>
