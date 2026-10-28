@@ -40,6 +40,18 @@ Al abrir la página se muestra un resumen de Ron Carúpano. Cada sección empiez
 
 **Regla editorial:** el relato se divide en dato observado, interpretación prudente y acción por investigar. No se presenta una correlación como prueba de causalidad. Los cambios entre porcentajes se escriben en palabras completas («puntos porcentuales») y se señala que 2025 y 2026 no son períodos de igual duración.
 
+## Navegación y acceso directo
+
+El menú del dashboard tiene ocho secciones interactivas. Tras añadir **Competencia por región**, se corrigió un problema potencial de caché: un navegador podía mostrar un `index.html` nuevo junto a un `app.js` anterior, causando que el botón fuera visible pero no respondiera.
+
+Los scripts y estilos se cargan con identificadores de versión coherentes. La sección regional permite ahora acceso directo mediante la URL:
+
+`https://grodriguezal.github.io/ron-carupano-nielsen-2026/#regional`
+
+Al hacer clic en una sección se actualiza el fragmento de la URL, y al abrir un enlace con `#regional` se muestra esa sección tras cargar los datos. Se ejecuta `tests/test_navigation.mjs` junto con el resto de las pruebas, para comprobar de manera automática los manejadores de clic y la visualización del informe regional.
+
+Si el navegador tiene una versión antigua en caché, realiza una recarga forzada y abre el acceso directo anterior.
+
 ## Comparador de los cinco principales competidores por región
 
 La sección **Competencia por región** muestra la posición de Carúpano frente a las cinco marcas competidoras con mayor participación de mercado en **valor** en cada corte (2026 hasta septiembre). Carúpano siempre aparece como referencia, aunque no figure entre las cinco competidoras. Para cada zona:
