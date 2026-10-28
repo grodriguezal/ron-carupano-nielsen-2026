@@ -1,0 +1,32 @@
+name: Validate Market Intelligence
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Check dashboard JavaScript syntax
+        run: node --check app.js
+      - name: Validate dataset and benchmark figures
+        run: python tests/test_data.py
+      - name: Validate all JSON datasets and dimension counts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected = {'cube.json': 3911, 'market-brand.json': 779, 'portfolio.json': 3111}
+          for file, count in expected.items():
+              data = json.loads((Path('data') / file).read_text(encoding='utf-8'))
+              assert isinstance(data, list) and len(data) == count, (file, len(data))
+              print(file, len(data), 'rows: OK')
+          meta = json.loads(Path('data/metadata.json').read_text(encoding='utf-8'))
+          assert len(meta['markets']) == 21
+          assert len(meta['brands']) == 46
+          print('Dimensions and JSON integrity: OK')
+          PY
