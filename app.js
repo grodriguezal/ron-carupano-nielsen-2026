@@ -1,8 +1,15 @@
-import {buildStrategicView} from './strategic-intelligence.js?v=20261028-navfix2';
-import {buildRegionalView} from './regional-intelligence.js?v=20261028-navfix2';
+import {buildStrategicView} from './strategic-intelligence.js?v=20261028-market-v3';
+import {buildRegionalView} from './regional-intelligence.js?v=20261028-market-v3';
+import {buildAdvancedView} from './advanced-intelligence.js?v=20261028-market-v3';
 const COLORS={gold:'#c5b783',white:'#ebe9e0',muted:'#919b96',grid:'#2b3230',red:'#e08d80',green:'#85b89c',blue:'#79989d'};
 const NATION='Total Venezuela1';
 const PAGES={
+ segments:['09 / ESTRUCTURA DEL MERCADO','Entender <em>cómo cambia la categoría.</em>','Qué peso tiene cada segmento en el mercado de ron y cuánto controla Carúpano dentro de cada uno.'],
+ premium:['10 / COMPETENCIA POR SEGMENTO','Competir <em>dentro del segmento.</em>','Ranking real por segmento: quién domina Standard, Premium, Super Premium y las demás categorías Nielsen.'],
+ value:['11 / POSICIONAMIENTO DE VALOR','¿Cuánto valor aporta <em>cada volumen vendido?</em>','Índice relativo de valor frente a volumen. Una herramienta de comparación, no un indicador de precio real.'],
+ distributionMatrix:['12 / DIAGNÓSTICO DE DISTRIBUCIÓN','¿La marca llega <em>a las tiendas adecuadas?</em>','Cruza la presencia numérica y ponderada con los cambios de participación, sin suponer causalidad.'],
+ formats:['13 / INTELIGENCIA DE FORMATOS','Entender lo que pasa <em>con 700 y 750 ml.</em>','Qué formatos aportan participación, cómo cambia su peso y dónde conviene revisar códigos y disponibilidad.'],
+ movements:['14 / MOVIMIENTOS COMPETITIVOS','¿Quién gana y pierde <em>participación?</em>','Identifica desplazamientos por marca y segmento sin atribuir las ganancias de una marca a pérdidas de otra.'],
  strategic:['08 / INTELIGENCIA ESTRATÉGICA','De Nielsen a <em>las decisiones de 2027.</em>','Cuatro capítulos para entender la competencia, descubrir diferencias entre mercados y justificar acciones comerciales concretas.'],
  overview:['01 / ENTENDER EL MERCADO','Qué está pasando <em>con Carúpano.</em>','Una explicación paso a paso de la posición de la marca, la competencia y los cambios que merecen atención.'],
  regional:['03 / COMPETENCIA POR REGIÓN','¿Quién lidera <em>cada región?</em>','Compara a Carúpano con los cinco competidores principales en cada región, canal y ciudad disponible.'],
@@ -11,7 +18,7 @@ const PAGES={
  distribution:['04 / PRESENCIA EN TIENDAS','No basta con <em>estar en la tienda.</em>','Comprende cuántos establecimientos venden la marca y qué importancia comercial tienen dentro de la categoría.'],
  portfolio:['05 / NUESTROS PRODUCTOS','¿Qué aporta cada <em>tipo de ron?</em>','Descubre cómo contribuyen los distintos segmentos a la participación total de Carúpano.'],
  radar:['06 / DECISIONES DE NEGOCIO','Dónde conviene <em>investigar primero.</em>','Identificamos señales que podrían requerir una acción comercial, sin confundir coincidencias con causas.']};
-const state={page:'overview',market:NATION,metric:'value',competitor:'CACIQUE',regionalMarket:'Capital Autoservicio1*',rows:[],portfolio:[],meta:{},charts:[]};
+const state={page:'overview',market:NATION,metric:'value',competitor:'CACIQUE',regionalMarket:'Capital Autoservicio1*',advancedSegment:'SUPER PREMIUM',advancedBrand:'CARUPANO',rows:[],portfolio:[],meta:{},charts:[]};
 const $=id=>document.getElementById(id),fmt=(v,d=2)=>v==null?'—':Number(v).toLocaleString('es-VE',{minimumFractionDigits:d,maximumFractionDigits:d});
 const diff=(a,b)=>a==null||b==null?null:b-a;
 const signed=(x,d=2)=>x==null?'—':`${x>=0?'+':''}${fmt(x,d)} puntos porcentuales`;
@@ -164,7 +171,7 @@ function explainCharts(){
  if(tableHints[state.page])document.querySelectorAll('#view .table-wrap').forEach(t=>t.insertAdjacentHTML('afterend',`<p class="table-reading"><strong>Cómo leer esta tabla:</strong> ${tableHints[state.page]}</p>`));
 }
 function explainDashboard(){
- const filters={regional:[],strategic:['marketSelect'],overview:['marketSelect','metricSelect'],competition:['marketSelect','competitorSelect'],channels:[],distribution:['marketSelect','competitorSelect'],portfolio:['marketSelect'],radar:[]};
+ const filters={segments:['marketSelect'],premium:['marketSelect'],value:['marketSelect'],distributionMatrix:['marketSelect'],formats:['marketSelect'],movements:['marketSelect'],regional:[],strategic:['marketSelect'],overview:['marketSelect','metricSelect'],competition:['marketSelect','competitorSelect'],channels:[],distribution:['marketSelect','competitorSelect'],portfolio:['marketSelect'],radar:[]};
  for(const name of ['marketSelect','metricSelect','competitorSelect']){
   const element=$(name);
   if(element?.closest('label'))element.closest('label').style.display=(filters[state.page]||[]).includes(name)?'':'none';
@@ -174,6 +181,15 @@ function explainDashboard(){
  const section=`<section class="reader-first" aria-label="Explicación de la sección"><div class="reader-kicker">ANTES DE VER LOS GRÁFICOS</div><h2>${n.title}</h2><p class="lead">${n.lead}</p><div class="reader-columns"><div class="reader-tile"><h3>1 · Qué muestran las cifras</h3><p>${n.observed}</p></div><div class="reader-tile"><h3>2 · Qué significan</h3><p>${n.means}</p></div><div class="reader-tile"><h3>3 · Qué conviene hacer</h3><p>${n.next}</p></div></div><div class="reader-note"><strong>Límite de los datos:</strong> ${n.note}</div></section>`;
  $('view').insertAdjacentHTML('afterbegin',section);
  explainCharts();
+}
+function advancedPage(){
+ const result=buildAdvancedView(state.rows,state.portfolio,state.page,state.market,state.advancedSegment,state.advancedBrand);
+ $('view').innerHTML=result.html;
+ result.charts.forEach(c=>chart(c.id,c.option));
+ const segment=$('advSegmentSelect');
+ if(segment)segment.addEventListener('change',()=>{state.advancedSegment=segment.value;render()});
+ const brand=$('advBrandSelect');
+ if(brand)brand.addEventListener('change',()=>{state.advancedBrand=brand.value;render()});
 }
 function regional(){
  const result=buildRegionalView(state.rows,state.regionalMarket);
@@ -222,7 +238,7 @@ function strategic(){
   }
  });
 }
-function render(){state.charts.forEach(c=>c.dispose());state.charts=[];const [kick,title,desc]=PAGES[state.page];$('kicker').textContent=kick;$('pageTitle').innerHTML=title;$('pageDesc').textContent=desc;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x.dataset.page===state.page));({overview,strategic,competition,regional,channels,distribution,portfolio,radar})[state.page]();explainDashboard();}
+function render(){state.charts.forEach(c=>c.dispose());state.charts=[];const [kick,title,desc]=PAGES[state.page];$('kicker').textContent=kick;$('pageTitle').innerHTML=title;$('pageDesc').textContent=desc;document.querySelectorAll('.nav-button').forEach(x=>x.classList.toggle('active',x.dataset.page===state.page));({overview,strategic,competition,regional,channels,distribution,portfolio,radar,segments:advancedPage,premium:advancedPage,value:advancedPage,distributionMatrix:advancedPage,formats:advancedPage,movements:advancedPage})[state.page]();explainDashboard();}
 function navigate(page,{updateHash=true}={}){
  if(!Object.prototype.hasOwnProperty.call(PAGES,page)){
   console.error('Sección desconocida:',page);
