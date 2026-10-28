@@ -37,13 +37,79 @@ function portfolioReconciliationCard(sum,brandTotal){
 }
 function panel(title,subtitle,plot,tag='',klass=''){return `<div class="panel ${klass}"><div class="panel-heading"><div><h2>${title}</h2><p>${subtitle}</p></div><span class="tag">${tag}</span></div><div class="plot ${plot==='tall'?'tall':''}" id="${plot}"></div></div>`}
 function table(headers,lines){return `<div class="table-wrap"><table class="table"><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${lines.join('')}</tbody></table></div>`}
-function brandTable(m,top=15){let rr=sorted(m,'value').slice(0,top);return table(['Marca','Participación en valor 2025','Participación en valor 2026 hasta septiembre','Diferencia entre períodos','Presencia ponderada en tiendas'],rr.map((x,i)=>`<tr class="${x.brand==='CARUPANO'?'highlight':''}"><td><strong>${i+1}. ${x.brand}</strong></td><td>${fmt(key(x,'2025_full','value'))}%</td><td>${fmt(key(x,'2026_ytd_sep','value'))}%</td><td class="${tone(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}">${signed(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}</td><td>${fmt(key(x,'2026_ytd_sep','weighted_distribution'))}%</td></tr>`))}
-function insights(m=state.market){const c=row(m,'CARUPANO'), st=row(m,'SANTA TERESA'), ca=row(m,'CACIQUE');if(!c)return[];const v0=key(c,'2025_full','value'),v1=key(c,'2026_ytd_sep','value');const top=(key(st,'2026_ytd_sep','value')??0)+(key(ca,'2026_ytd_sep','value')??0);const prior=(key(st,'2025_full','value')??0)+(key(ca,'2025_full','value')??0);return [
- {tag:'01 / SITUACIÓN DE CARÚPANO',title:`Carúpano ${v1<v0?'pierde':'gana'} participación en valor`,body:`En ${readableMarket(m)}, de cada 100 unidades de valor vendido de ron, a Carúpano le corresponden ${fmt(v1)} en 2026 hasta septiembre, frente a ${fmt(v0)} en todo 2025. La diferencia es de ${signed(v1-v0)}. Los períodos no tienen la misma duración.`,type:'high'},
- {tag:'02 / POSICIÓN DE LAS MARCAS LÍDERES',title:`Santa Teresa y Cacique reúnen el ${fmt(top)}% del valor medido`,body:`En ${readableMarket(m)} representan juntas ${fmt(prior)}% en 2025 completo y ${fmt(top)}% en 2026 hasta septiembre. Esta concentración puede dificultar que el resto de marcas gane presencia; no demuestra por sí sola de dónde proceden los cambios de participación.`,type:'high'},
- {tag:'03 / LO QUE FALTA POR SABER',title:'Estar en tiendas no es lo mismo que vender más',body:'Una marca puede encontrarse en más establecimientos y, aun así, perder participación. Para conocer las causas hace falta revisar disponibilidad, inventarios, surtido, precios y actividad de competidores.',type:'medium'}];}
+function brandTable(m,top=15,metric='value'){
+ const labels={value:'Participación en valor',volume:'Participación en volumen',numeric_distribution:'Distribución numérica',weighted_distribution:'Distribución ponderada'};
+ const companion=metric==='weighted_distribution'?'numeric_distribution':metric==='numeric_distribution'?'weighted_distribution':metric==='volume'?'value':'weighted_distribution';
+ const rr=sorted(m,metric).slice(0,top);
+ return table(['Marca',labels[metric]+' 2025 completo',labels[metric]+' 2026 hasta septiembre','Cambio (pp)',labels[companion]+' 2026'],rr.map((x,i)=>
+ `<tr class="${x.brand==='CARUPANO'?'highlight':''}"><td><strong>${i+1}. ${x.brand}</strong></td><td>${fmt(key(x,'2025_full',metric))} %</td><td>${fmt(key(x,'2026_ytd_sep',metric))} %</td><td class="${tone(diff(key(x,'2025_full',metric),key(x,'2026_ytd_sep',metric)))}">${signed(diff(key(x,'2025_full',metric),key(x,'2026_ytd_sep',metric)))}</td><td>${fmt(key(x,'2026_ytd_sep',companion))} %</td></tr>`));
+}
+function distributionDiagnosis(c){
+ const dn=diff(key(c,'2025_full','numeric_distribution'),key(c,'2026_ytd_sep','numeric_distribution'));
+ const dw=diff(key(c,'2025_full','weighted_distribution'),key(c,'2026_ytd_sep','weighted_distribution'));
+ const dv=diff(key(c,'2025_full','value'),key(c,'2026_ytd_sep','value'));
+ const sign=x=>x==null?0:x>.005?1:x<-.005?-1:0;
+ const n=sign(dn),w=sign(dw);
+ let title,meaning,action;
+ if(n>0&&w<0){
+  title='Más tiendas, menor distribución ponderada';
+  meaning='La proporción de establecimientos con la marca aumenta, pero las tiendas con presencia representan menos peso de la categoría. Puede cambiar la composición o relevancia comercial de las tiendas; no demuestra pérdida de locales importantes.';
+  action='Contrastar altas y bajas por cuenta, peso comercial, inventarios y surtido antes de intentar ampliar de nuevo la cobertura.';
+ }else if(n<0&&w>0){
+  title='Menos tiendas, mayor distribución ponderada';
+  meaning='Baja la cobertura numérica, pero aumenta el peso comercial de las tiendas con presencia. No demuestra que se estén abandonando deliberadamente tiendas pequeñas.';
+  action='Comprobar qué tiendas se perdieron y qué cuentas explican el cambio ponderado; contrastar ventas y cobertura objetivo.';
+ }else if(n<0&&w<0){
+  title='Retroceden ambas distribuciones';
+  meaning='Disminuyen el porcentaje de establecimientos con la marca y el peso comercial de sus tiendas. Conviene investigar cobertura sin asumir automáticamente faltantes.';
+  action='Revisar clientes perdidos, listados, inventarios y presencia en establecimientos de mayor peso comercial.';
+ }else if(n>0&&w>0){
+  title='Mejoran ambas distribuciones';
+  meaning='Aumentan la presencia en establecimientos y el peso comercial de esas tiendas. Esto no garantiza mayor cuota de ventas.';
+  action='Verificar qué cuentas explican la mejora y contrastar cuota, exhibición, rotación y surtido.';
+ }else if(n<0){
+  title='Baja la distribución numérica';
+  meaning='La proporción de tiendas disminuye, con cambios ponderados reducidos o no concluyentes.';
+  action='Identificar las tiendas perdidas y su peso comercial antes de ampliar cobertura.';
+ }else if(w<0){
+  title='Baja la distribución ponderada';
+  meaning='Las tiendas con presencia representan menor peso comercial, con cambios numéricos reducidos o no concluyentes.';
+  action='Revisar cuentas con presencia y su relevancia comercial antes de invertir en nuevas tiendas.';
+ }else{
+  title='Distribución estable o con señales favorables';
+  meaning='No coinciden dos señales claras de pérdida de distribución; aun así, la cobertura no demuestra ventas.';
+  action='Mantener seguimiento de disponibilidad, surtido y desempeño por cuenta.';
+ }
+ const share=dv==null?'No se dispone de cuota comparable.':dv<-.005?'La cuota en valor también retrocede; sus causas requieren comprobación.':dv>.005?'La cuota en valor mejora, pero no puede atribuirse automáticamente a la distribución.':'La cuota en valor permanece aproximadamente estable.';
+ return {title,meaning:meaning+' '+share,action,dn,dw,dv};
+}
+function buildMetricInsights(m=state.market,metric=state.metric){
+ const c=row(m,'CARUPANO'),st=row(m,'SANTA TERESA'),ca=row(m,'CACIQUE');if(!c)return[];
+ const old=key(c,'2025_full',metric),cur=key(c,'2026_ytd_sep',metric),d=diff(old,cur),where=readableMarket(m);
+ const label=metricLabel[metric],diag=distributionDiagnosis(c);
+ const show=n=>n==null?'sin dato':fmt(n)+' %';
+ const first={tag:'01 / INDICADOR SELECCIONADO',title:label+' de Carúpano',body:where+': '+show(old)+' en 2025 completo frente a '+show(cur)+' en 2026 hasta septiembre ('+signed(d)+'). Las ventanas temporales tienen duraciones distintas.'};
+ let second;
+ if(metric==='value'||metric==='volume'){
+  const a=key(st,'2026_ytd_sep',metric),b=key(ca,'2026_ytd_sep',metric),total=a==null||b==null?null:a+b;
+  second={tag:'02 / COMPETIDORES',title:'Cuota conjunta de Santa Teresa y Cacique en '+(metric==='value'?'valor':'volumen'),body:total==null?'No hay datos suficientes para sumar cuotas.':'Ambas representan '+show(total)+' del '+(metric==='value'?'valor':'volumen')+' de ron vendido en '+where+'. Solo sumamos cuotas con el mismo denominador, no distribuciones de tiendas.'};
+ }else{
+  second={tag:'02 / COMPARACIÓN DE PRESENCIA',title:'Las distribuciones de distintas marcas no se suman',body:'En '+where+': Carúpano '+show(cur)+', Santa Teresa '+show(key(st,'2026_ytd_sep',metric))+', Cacique '+show(key(ca,'2026_ytd_sep',metric))+'. Una tienda puede vender varias marcas: estas presencias no son partes excluyentes del mercado.'};
+ }
+ let third;
+ if(metric==='numeric_distribution'||metric==='weighted_distribution'){
+  third={tag:'03 / DISTRIBUCIÓN Y ACCIÓN',title:(metric==='numeric_distribution'?'Cobertura numérica: ':'Peso comercial de la cobertura: ')+diag.title,body:'Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:(metric==='numeric_distribution'?'Partir de los establecimientos ganados o perdidos: ':'Partir de las cuentas que explican la relevancia comercial: ')+diag.action};
+ }else if(metric==='volume'){
+  const val=diff(key(c,'2025_full','value'),key(c,'2026_ytd_sep','value'));
+  third={tag:'03 / QUÉ INVESTIGAR',title:'Volumen y valor no son la misma medida',body:'Cambio en volumen: '+signed(d)+'; en valor: '+signed(val)+'. Las diferencias pueden estar relacionadas con precios, promociones o mezcla de productos, sin probar ninguna causa. '+diag.title+'.',action:'Contrastar precios efectivos, mix, promociones y cambios en ambas distribuciones antes de concluir por qué cambia el volumen.'};
+ }else{
+  third={tag:'03 / QUÉ INVESTIGAR',title:'Contrastar cuota en valor y presencia en tiendas',body:'Cambio de cuota en valor: '+signed(d)+'. Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:diag.action+' Contrastar también precios y surtido.'};
+ }
+ return [first,second,third];
+}
+function insights(m=state.market,metric=state.metric){return buildMetricInsights(m,metric)}
 function overview(){const c=row(state.market,'CARUPANO');if(!c){$('view').innerHTML='<div class="notice">Carúpano no tiene observaciones en este corte de mercado.</div>';return}const cm=(m)=>[key(c,'2025_full',m),key(c,'2026_ytd_sep',m)];let metric=state.metric;let [prev,cur]=cm(metric);const n=sorted().findIndex(x=>x.brand==='CARUPANO')+1;
- $('view').innerHTML=`<div class="cards">${card('Participación de Carúpano · '+metricLabel[metric],fmt(cur)+'%',diff(prev,cur))}${card('Lugar de Carúpano entre las marcas','#'+n,null,'ordenado según el indicador seleccionado')}${card('Peso comercial de tiendas con la marca',fmt(key(c,'2026_ytd_sep','weighted_distribution'))+'%',diff(...cm('weighted_distribution')))}${card('Participación en volumen',fmt(key(c,'2026_ytd_sep','volume'))+'%',diff(...cm('volume')))}</div><div class="grid2">${panel('¿Qué marcas tienen mayor participación?','Comparamos el año completo 2025 con 2026 acumulado hasta septiembre','rankChart','COMPETENCIA')}${panel('Marcas que aumentan o reducen su participación','Cambios medidos en puntos porcentuales, entre períodos distintos','deltaChart','DIFERENCIAS')}</div><div class="section-title">TRES IDEAS PARA ENTENDER LOS RESULTADOS</div><div class="grid2 equal"><div class="panel"><div class="insight-list">${insights().map(i=>`<div class="insight"><div class="flag">${i.tag}</div><h3>${i.title}</h3><p>${i.body}</p></div>`).join('')}</div></div><div class="panel"><div class="panel-heading"><div><h2>Orden de las marcas en este mercado</h2><p>${state.market.replaceAll('*','')} · Participación en valor</p></div></div>${brandTable(state.market,10)}</div></div>`;
+ $('view').innerHTML=`<div class="cards">${card('Indicador seleccionado · '+metricLabel[metric],fmt(cur)+'%',diff(prev,cur))}${card('Posición de Carúpano según el indicador',n?'#'+n:'—',null,'ordenado según el indicador seleccionado')}${card('Peso comercial de tiendas con la marca',fmt(key(c,'2026_ytd_sep','weighted_distribution'))+'%',diff(...cm('weighted_distribution')))}${card('Participación en volumen',fmt(key(c,'2026_ytd_sep','volume'))+'%',diff(...cm('volume')))}</div><div class="grid2">${panel('Ranking · '+metricLabel[metric],'Ordenado por el indicador seleccionado: 2025 completo vs. 2026 hasta septiembre','rankChart','COMPARACIÓN')}${panel('Evolución de · '+metricLabel[metric],'Diferencias del indicador seleccionado en puntos porcentuales','deltaChart','DIFERENCIAS')}</div><div class="section-title">TRES IDEAS PARA ENTENDER LOS RESULTADOS</div><div class="grid2 equal"><div class="panel"><div class="insight-list">${insights().map(i=>`<div class="insight"><div class="flag">${i.tag}</div><h3>${i.title}</h3><p>${i.body}</p></div>`).join('')}</div></div><div class="panel"><div class="panel-heading"><div><h2>Orden de las marcas en este mercado</h2><p>${readableMarket(state.market)} · ${metricLabel[metric]}</p></div></div>${brandTable(state.market,10,metric)}</div></div>`;
  const winners=sorted(state.market,metric).slice(0,8).reverse();chart('rankChart',{tooltip:{trigger:'axis'},grid:{left:120,right:20,top:14,bottom:33},xAxis:{type:'value',...axis},yAxis:{type:'category',data:winners.map(x=>x.brand),...axis,axisLabel:{color:COLORS.muted,fontSize:10}},series:[{name:'2025 completo',type:'bar',data:winners.map(x=>key(x,'2025_full',metric)),itemStyle:{color:'#6b7470'},barMaxWidth:13},{name:'2026 hasta septiembre',type:'bar',data:winners.map(x=>key(x,'2026_ytd_sep',metric)),itemStyle:{color:COLORS.gold},barMaxWidth:13}],legend:{bottom:0,textStyle:{color:COLORS.muted}}});
  const dd=marketRows().filter(x=>diff(key(x,'2025_full',metric),key(x,'2026_ytd_sep',metric))!=null).sort((a,b)=>Math.abs(diff(key(b,'2025_full',metric),key(b,'2026_ytd_sep',metric)))-Math.abs(diff(key(a,'2025_full',metric),key(a,'2026_ytd_sep',metric)))).slice(0,9).reverse(); chart('deltaChart',{tooltip:{trigger:'axis',valueFormatter:v=>fmt(v,2)+' puntos porcentuales'},grid:{left:116,right:32,top:14,bottom:26},xAxis:{type:'value',...axis,axisLabel:{color:COLORS.muted,formatter:v=>String(v)}},yAxis:{type:'category',data:dd.map(x=>x.brand),...axis,axisLabel:{color:COLORS.muted,fontSize:10}},series:[{type:'bar',data:dd.map(x=>{const d=diff(key(x,'2025_full',metric),key(x,'2026_ytd_sep',metric));return {value:d,itemStyle:{color:d>=0?COLORS.green:COLORS.red}}}),barMaxWidth:20}]});}
 function competition(){
@@ -56,11 +122,19 @@ function competition(){
 }
 function channels(){const mk=state.meta.markets||[...new Set(state.rows.map(x=>x.market))];let rec=mk.map(m=>({m,x:row(m,'CARUPANO')})).filter(x=>x.x).sort((a,b)=>key(b.x,'2026_ytd_sep','value')-key(a.x,'2026_ytd_sep','value'));$('view').innerHTML=`<div class="notice">Los cortes regionales y de canal <strong>pueden solaparse</strong>. Cada participación usa el denominador de su propio mercado; las cuotas no se suman. Abre <strong>Competencia por región</strong> para comparar las cinco marcas líderes en cada zona.</div><div class="grid2">${panel('¿Dónde tiene más participación Carúpano?','De cada 100 de valor vendido de ron en ese mercado, cuánto corresponde a Carúpano','marketPlot','21 CORTES')}${panel('Presencia en tiendas frente a participación','Cada punto representa un mercado distinto, con un total de ventas propio','geoPlot','DIAGNÓSTICO')}</div><div class="panel"><div class="panel-heading"><div><h2>Comparación por canal y región</h2><p>Mercados ordenados por participación de Carúpano en 2026 hasta septiembre</p></div></div>${table(['Mercado','Participación 2025','Participación 2026 hasta septiembre','Diferencia de participación','Tiendas con presencia de la marca','Peso comercial de las tiendas con la marca'],rec.map(({m,x})=>`<tr><td><strong>${readableMarket(m)}</strong></td><td>${fmt(key(x,'2025_full','value'))}%</td><td>${fmt(key(x,'2026_ytd_sep','value'))}%</td><td class="${tone(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}">${signed(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}</td><td>${fmt(key(x,'2026_ytd_sep','numeric_distribution'))}%</td><td>${fmt(key(x,'2026_ytd_sep','weighted_distribution'))}%</td></tr>`))}</div>`;
  chart('marketPlot',{grid:{left:190,right:28,top:7,bottom:20},xAxis:{type:'value',...axis},yAxis:{type:'category',data:rec.slice(0,13).reverse().map(x=>readableMarket(x.m)),axisLabel:{fontSize:10,color:COLORS.muted},axisLine:{show:false},axisTick:{show:false}},series:[{type:'bar',data:rec.slice(0,13).reverse().map(x=>key(x.x,'2026_ytd_sep','value')),barMaxWidth:14,itemStyle:{color:COLORS.gold}}]});chart('geoPlot',{tooltip:{trigger:'item',formatter:p=>p.data[2]+'<br/>Participación: '+fmt(p.data[1])+'%<br/>Presencia ponderada: '+fmt(p.data[0])+'%'},xAxis:{type:'value',name:'Peso comercial de las tiendas con la marca',nameTextStyle:{color:COLORS.muted},...axis},yAxis:{type:'value',name:'Participación',nameTextStyle:{color:COLORS.muted},...axis},series:[{type:'scatter',symbolSize:12,itemStyle:{color:COLORS.gold},data:rec.map(x=>[key(x.x,'2026_ytd_sep','weighted_distribution'),key(x.x,'2026_ytd_sep','value'),x.m])}]});}
-function distribution(){const r=row(state.market,'CARUPANO'),op=row(state.market,state.competitor);$('view').innerHTML=`<div class="cards">${card('Tiendas que venden Carúpano',fmt(key(r,'2026_ytd_sep','numeric_distribution'))+'%',diff(key(r,'2025_full','numeric_distribution'),key(r,'2026_ytd_sep','numeric_distribution')))}${card('Presencia en tiendas de mayor peso comercial',fmt(key(r,'2026_ytd_sep','weighted_distribution'))+'%',diff(key(r,'2025_full','weighted_distribution'),key(r,'2026_ytd_sep','weighted_distribution')))}${card('Tiendas que venden la otra marca',fmt(key(op,'2026_ytd_sep','numeric_distribution'))+'%',null,state.competitor)}${card('Peso comercial de tiendas de la otra marca',fmt(key(op,'2026_ytd_sep','weighted_distribution'))+'%',null,state.competitor)}</div><div class="grid2">${panel('Comparación de presencia entre marcas','Carúpano frente a la marca seleccionada, en el período 2026 hasta septiembre','distributionPlot','PRESENCIA')}${panel('¿Presencia en tiendas o participación en ventas?','Dos indicadores diferentes: estar disponible no garantiza que el comprador elija la marca','ratioPlot','DIAGNÓSTICO')}</div><div class="notice"><strong>Cómo interpretar:</strong> distribución ponderada representa el peso de establecimientos donde está presente la marca según la definición NielsenIQ. No es porcentaje de ventas de marca ni una suma de establecimientos.</div>`;
+function distribution(){const r=row(state.market,'CARUPANO'),op=row(state.market,state.competitor);$('view').innerHTML=`<div class="cards">${card('Tiendas que venden Carúpano',fmt(key(r,'2026_ytd_sep','numeric_distribution'))+'%',diff(key(r,'2025_full','numeric_distribution'),key(r,'2026_ytd_sep','numeric_distribution')))}${card('Presencia en tiendas de mayor peso comercial',fmt(key(r,'2026_ytd_sep','weighted_distribution'))+'%',diff(key(r,'2025_full','weighted_distribution'),key(r,'2026_ytd_sep','weighted_distribution')))}${card('Tiendas que venden la otra marca',fmt(key(op,'2026_ytd_sep','numeric_distribution'))+'%',null,state.competitor)}${card('Peso comercial de tiendas de la otra marca',fmt(key(op,'2026_ytd_sep','weighted_distribution'))+'%',null,state.competitor)}</div><div class="grid2">${panel('Comparación de presencia entre marcas','Carúpano frente a la marca seleccionada, en el período 2026 hasta septiembre','distributionPlot','PRESENCIA')}${panel('¿Presencia en tiendas o participación en ventas?','Dos indicadores diferentes: estar disponible no garantiza que el comprador elija la marca','ratioPlot','DIAGNÓSTICO')}</div><div class="notice"><strong>Lectura específica:</strong> ${distributionDiagnosis(r).title}. ${distributionDiagnosis(r).meaning} <strong>Qué investigar:</strong> ${distributionDiagnosis(r).action} La distribución ponderada no es cuota de ventas de marca, y las distribuciones de competidores no se suman.</div>`;
  const brands=[r,op].filter(Boolean);const labs=['Tiendas con la marca','Peso comercial de las tiendas','Participación en valor'];chart('distributionPlot',{tooltip:{trigger:'axis'},xAxis:{type:'category',data:labs,...axis},yAxis:{type:'value',...axis},legend:{bottom:0,textStyle:{color:COLORS.muted}},series:brands.map((b,i)=>({name:b.brand,type:'bar',barMaxWidth:32,itemStyle:{color:i===0?COLORS.gold:COLORS.blue},data:['numeric_distribution','weighted_distribution','value'].map(k=>key(b,'2026_ytd_sep',k))}))});chart('ratioPlot',{xAxis:{type:'category',data:brands.map(x=>x.brand),...axis},yAxis:{type:'value',...axis},legend:{bottom:0,textStyle:{color:COLORS.muted}},series:[{name:'Participación en valor',type:'bar',data:brands.map(x=>key(x,'2026_ytd_sep','value')),itemStyle:{color:COLORS.gold}},{name:'Tiendas con presencia de la marca',type:'bar',data:brands.map(x=>key(x,'2026_ytd_sep','numeric_distribution')),itemStyle:{color:COLORS.blue}}]});}
 function portfolio(){let rows=state.portfolio.filter(x=>x.market===state.market&&x.brand==='CARUPANO'&&x.segment!=null&&x.size_ml==null);const total=rows.reduce((a,b)=>a+(key(b,'2026_ytd_sep','value')??0),0);$('view').innerHTML=`<div class="cards">${card('Participación de Carúpano en el mercado elegido',fmt(key(row(state.market,'CARUPANO'),'2026_ytd_sep','value'))+'%',diff(key(row(state.market,'CARUPANO'),'2025_full','value'),key(row(state.market,'CARUPANO'),'2026_ytd_sep','value')))}${card('Tipos de ron incluidos',rows.length,null,'sin volver a contar sus formatos de envase')}${card('Participación aportada por los segmentos',fmt(total)+'%',null,'suma de los segmentos en el mismo mercado')}${portfolioReconciliationCard(total,key(row(state.market,'CARUPANO'),'2026_ytd_sep','value'))}</div><div class="grid2">${panel('¿Qué segmentos aportan participación?','Cada porción aporta una parte de la participación total de Carúpano','segmentPlot','PORTAFOLIO')}${panel('Participación aportada por cada segmento de Carúpano','Cada cifra es un porcentaje de todo el ron vendido en el mercado seleccionado','segmentBar','COMPOSICIÓN')}</div><div class="panel"><div class="panel-heading"><div><h2>Qué aporta cada tipo de ron de Carúpano</h2><p>Marca Carúpano en ${readableMarket(state.market)} · niveles no aditivos diferenciados</p></div></div>${table(['Tipo de ron','Participación 2025','Participación 2026 hasta septiembre','Diferencia entre períodos'],rows.map(x=>`<tr><td><strong>${x.segment}</strong></td><td>${fmt(key(x,'2025_full','value'))}%</td><td>${fmt(key(x,'2026_ytd_sep','value'))}%</td><td class="${tone(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}">${signed(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}</td></tr>`))}</div>`;
  chart('segmentPlot',{tooltip:{trigger:'item',formatter:p=>p.name+': '+fmt(p.value)+'% del mercado'},legend:{bottom:0,textStyle:{color:COLORS.muted}},series:[{type:'pie',radius:['52%','76%'],center:['50%','43%'],label:{show:false},data:rows.map((r,i)=>({name:r.segment,value:key(r,'2026_ytd_sep','value')||0,itemStyle:{color:[COLORS.gold,COLORS.blue,'#967e68','#5f755d','#b47b75'][i%5]}}))}]});chart('segmentBar',{xAxis:{type:'category',data:rows.map(x=>x.segment),axisLabel:{rotate:30,color:COLORS.muted,fontSize:10},...axis},yAxis:{type:'value',...axis},series:[{type:'bar',itemStyle:{color:COLORS.gold},data:rows.map(x=>key(x,'2026_ytd_sep','value'))}]});}
-function opportunities(){return (state.meta.markets||[]).map(m=>{let r=row(m,'CARUPANO');if(!r)return null;let dv=diff(key(r,'2025_full','value'),key(r,'2026_ytd_sep','value')),dd=diff(key(r,'2025_full','numeric_distribution'),key(r,'2026_ytd_sep','numeric_distribution')),dw=diff(key(r,'2025_full','weighted_distribution'),key(r,'2026_ytd_sep','weighted_distribution'));let score=Math.max(0,-dv||0)*3+Math.max(0,-dd||0)*0.12+Math.max(0,-dw||0)*0.18;let issue=dv<0&&dd<0?'Pérdida de cuota y de cobertura':dv<0&&dd>=0?'La presencia no se convierte en cuota':dv>=0&&dd<0?'Cuota resistente, distribución en riesgo':'Sin deterioro combinado';return {market:m,dv,dd,dw,score,issue,action:dv<0&&dd<0?'Comprobar puntos de venta, disponibilidad y surtido':dv<0?'Revisar velocidad de venta, combinación de productos y presencia en tiendas':'Monitorizar y documentar palancas'};}).filter(Boolean).sort((a,b)=>b.score-a.score)}
+function opportunities(){
+ return (state.meta.markets||[]).map(m=>{
+  const r=row(m,'CARUPANO');if(!r)return null;
+  const d=distributionDiagnosis(r),dv=d.dv,dd=d.dn,dw=d.dw;
+  if(dv==null||dd==null||dw==null)return null;
+  const score=Math.max(0,-dv)*3+Math.max(0,-dd)*0.12+Math.max(0,-dw)*0.18;
+  return {market:m,dv,dd,dw,score,issue:d.title,action:d.action};
+ }).filter(Boolean).sort((a,b)=>b.score-a.score);
+}
 function radar(){const records=opportunities();const max=records[0];$('view').innerHTML=`<div class="cards">${card('Mercados incluidos en el análisis',records.length,null,'cada corte es un denominador diferente')}${card('Mercados con menor participación',records.filter(x=>x.dv<0).length,null,'variación entre ventanas')}${card('Mercados con menor participación y presencia',records.filter(x=>x.dv<0&&x.dd<0).length,null,'cuota y distribución numérica')}${card('Mayor puntuación de revisión',max?.score!=null?fmt(max.score):'—',null,'Criterio de ordenación, no dinero ni impacto estimado')}</div><div class="notice"><strong>Cómo se calcula el orden de revisión:</strong> 3 × pérdida de cuota valor (en puntos porcentuales) + 0,12 × pérdida de distribución numérica (en puntos porcentuales) + 0,18 × pérdida de distribución ponderada (en puntos porcentuales). Se contabilizan solo pérdidas. La fórmula da más peso a la pérdida de participación que a la pérdida de presencia. Es un criterio práctico para ordenar investigaciones, no un pronóstico ni una prueba de las causas.</div><div class="panel"><div class="panel-heading"><div><h2>Qué mercados conviene revisar primero</h2><p>Cambios medidos, motivos por investigar y siguientes acciones</p></div><span class="tag">SEÑALES DETECTADAS EN LOS DATOS</span></div>${table(['Prioridad','Mercado','Señal','Cambio de participación en valor','Cambio de presencia en tiendas','Cambio de peso comercial de tiendas','Siguiente acción'],records.map((x,i)=>`<tr><td><span class="priority ${i>=5?'medium':''}">${i<5?'REVISAR PRIMERO':'INVESTIGAR'}</span></td><td><strong>${readableMarket(x.market)}</strong></td><td>${x.issue}</td><td class="${tone(x.dv)}">${signed(x.dv)}</td><td class="${tone(x.dd)}">${signed(x.dd)}</td><td class="${tone(x.dw)}">${signed(x.dw)}</td><td>${x.action}</td></tr>`))}</div>`}
 function readableMarket(m){
  return String(m||'mercado seleccionado').replace(/1\*?$/,'').replace(/^T /,'').replace(/Alimentos_Abs/g,'alimentos (corte especial)').replace(/\+/g,' + ').trim();
@@ -86,14 +160,15 @@ function readerNarrative(){
  const dw0=key(c,'2025_full','weighted_distribution'),dw1=key(c,'2026_ytd_sep','weighted_distribution');
  const share=(v)=>v==null?'sin dato':`${fmt(v)} %`;
  if(state.page==='overview'){
-   const old=key(c,'2025_full',state.metric),current=key(c,'2026_ytd_sep',state.metric);
-   const rank=sorted(state.market,state.metric).findIndex(x=>x.brand==='CARUPANO')+1;
-   return {title:`¿Qué nos está diciendo el mercado de ${m}?`,
-    lead:`Esta pantalla resume cómo le va a Ron Carúpano dentro del mercado de ron que mide NielsenIQ. El indicador seleccionado es «${metricLabel[state.metric]}». ${shortMetricExplain(state.metric)}`,
-    observed:`Carúpano registra ${share(current)} en 2026 hasta septiembre, frente a ${share(old)} en el año completo 2025: ${describeMovement(diff(old,current))}. Ocupa el lugar ${rank||'no disponible'} según el indicador seleccionado.`,
-    means:`El porcentaje indica qué proporción del mercado medido corresponde a Carúpano. No es una cifra de ventas absolutas. Los gráficos comparan marcas y muestran si aumentan o disminuyen sus participaciones.`,
-    next:`Revisa las marcas que ganan participación y cruza la situación de Carúpano con su presencia en tiendas. Si encontramos pérdidas de participación y de distribución, será prioritario investigar cobertura y disponibilidad.`,
-    note:'Las dos ventanas temporales tienen diferente duración. Estos cambios de participación no equivalen a variaciones interanuales de facturación.'};
+    const old=key(c,'2025_full',state.metric),current=key(c,'2026_ytd_sep',state.metric);
+    const rank=sorted(state.market,state.metric).findIndex(x=>x.brand==='CARUPANO')+1;
+    const notes=buildMetricInsights(state.market,state.metric);
+    return {title:`¿Qué revela la ${metricLabel[state.metric].toLowerCase()} en ${m}?`,
+     lead:`El indicador seleccionado es «${metricLabel[state.metric]}». Los rankings, cifras y recomendaciones responden a esa elección. ${shortMetricExplain(state.metric)}`,
+     observed:`Carúpano registra ${share(current)} frente a ${share(old)} en 2025 completo: ${describeMovement(diff(old,current))}. Su puesto es ${rank||'no disponible'} según este indicador.`,
+     means:notes[1]?.body||'No hay datos comparables suficientes para interpretar la competencia.',
+     next:notes[2]?.action||'Verificar información comercial antes de decidir.',
+     note:'2025 completo y enero–septiembre 2026 tienen distinta duración. Las cuotas de valor/volumen son medidas de venta relativas; las distribuciones miden presencia de marca y nunca se suman entre competidores.'};
  }
  if(state.page==='competition'){
    const cv=key(c,'2026_ytd_sep','value'),rv=key(rival,'2026_ytd_sep','value');
@@ -101,7 +176,7 @@ function readerNarrative(){
    return {title:`¿Cómo se compara Carúpano con ${state.competitor}?`,
      lead:`Aquí mostramos qué marcas concentran el valor vendido de ron dentro de ${m}. Puedes cambiar la marca de comparación arriba. Tener más participación significa representar una mayor proporción de las ventas medidas.`,
      observed:`En 2026 hasta septiembre, Carúpano tiene ${share(cv)} del valor medido, frente a ${share(rv)} de ${state.competitor}. ${gap==null?'':`${rv>cv?state.competitor:'Carúpano'} lleva una ventaja de ${fmt(gap)} puntos porcentuales.`}`,
-     means:'El gráfico de puntos relaciona cuánto vende cada marca en proporción al mercado con la importancia de las tiendas donde está presente. Una marca puede tener mucha distribución sin una participación equivalente.',
+     means:'El ranking muestra cuotas de valor y la tabla presenta por separado distribución ponderada. Mayor cobertura no garantiza mayor participación en valor.',
      next:'Identifica al competidor con el que quieras compararte y examina si su fortaleza proviene de una mayor presencia en tiendas o de una mayor participación donde está disponible. Para confirmar motivos hacen falta datos adicionales de ventas y precios.',
      note:'La concentración del mercado no identifica de qué marca proceden las ganancias o pérdidas de otra. Los indicadores no prueban causalidad.'};
  }
@@ -118,14 +193,14 @@ function readerNarrative(){
      note:'Algunos cortes geográficos y de canal se solapan, y los cortes de «alimentos» son específicos del proveedor. No representan necesariamente territorios independientes.'};
  }
  if(state.page==='distribution'){
-   const rivalNum=key(rival,'2026_ytd_sep','numeric_distribution');
-   let contrast=shareChange<0&&dn1>dn0?'Aunque Carúpano aparece en una proporción ligeramente mayor de tiendas, su participación en valor es menor.':'La participación y la presencia en establecimientos deben revisarse juntas, porque no miden lo mismo.';
-   return {title:'Estar presente en una tienda no garantiza que el comprador elija Carúpano',
-     lead:'Este apartado separa dos preguntas: ¿en cuántas tiendas aparece la marca? y ¿qué importancia tienen esas tiendas para las ventas de ron? La primera es la distribución numérica; la segunda, la distribución ponderada.',
-     observed:`En ${m}, Carúpano está presente en ${share(dn1)} de los establecimientos medidos (sin ponderar) y en establecimientos que representan ${share(dw1)} del peso comercial de la categoría. ${state.competitor} aparece en ${share(rivalNum)} de las tiendas.`,
-     means:contrast,
-     next:'Solicita al equipo comercial revisión de disponibilidad real, inventarios, exhibición, surtido y ejecución en tiendas importantes. Un aumento de presencia sin aumento de cuota no demuestra, por sí solo, un problema de rotación.',
-     note:'La distribución ponderada no es participación en las ventas de Carúpano ni porcentaje de botellas vendidas.'};
+    const diagnosis=distributionDiagnosis(c);
+    const rn=key(rival,'2026_ytd_sep','numeric_distribution'),rw=key(rival,'2026_ytd_sep','weighted_distribution');
+    return {title:'Distribución numérica y ponderada: diagnósticos diferentes',
+      lead:'La distribución numérica es la proporción de tiendas con presencia de la marca. La ponderada representa el peso de las ventas de la categoría de esas tiendas, no las ventas de la marca.',
+      observed:`Carúpano en ${m}: numérica ${share(dn1)} (${signed(diagnosis.dn)}) y ponderada ${share(dw1)} (${signed(diagnosis.dw)}). ${state.competitor}: numérica ${share(rn)} y ponderada ${share(rw)}.`,
+      means:diagnosis.title+'. '+diagnosis.meaning,
+      next:diagnosis.action,
+      note:'Las distribuciones pueden solaparse entre marcas, no se suman, y sus variaciones no demuestran causas. Las ventanas temporales tampoco son iguales.'};
  }
  if(state.page==='portfolio'){
    const seg=state.portfolio.filter(x=>x.market===state.market&&x.brand==='CARUPANO'&&x.segment!=null&&x.size_ml==null);
@@ -143,16 +218,16 @@ function readerNarrative(){
    return {title:'Un detector de señales, no un pronóstico de ventas',
      lead:'El sistema compara automáticamente cambios de participación en valor con cambios de presencia en tiendas. Después ordena los mercados mediante una puntuación de revisión basada en reglas visibles. No usa inteligencia artificial para inventar causas.',
      observed:`En ${rec.length} cortes de mercado se identifican ${downs} casos donde la participación en valor y la distribución numérica son menores en el período más reciente. El corte que encabeza la lista es ${readableMarket(top?.market)}.`,
-     means:'Una puntuación alta significa que varias señales de deterioro coinciden; no indica cuánto dinero está perdiendo la marca ni garantiza que la oportunidad sea la mayor del mercado. Los cortes más pequeños pueden producir variaciones grandes.',
-     next:'Usa el orden como una lista de investigaciones para Comercial: confirmar datos de clientes, disponibilidad, inventarios y potencial antes de definir prioridades de inversión.',
+     means:'La tabla distingue distribución numérica y ponderada: más puntos de venta no equivale a mayor importancia comercial. La puntuación ordena señales, no estima dinero perdido ni rentabilidad.',
+     next:'Cuando distribución numérica y ponderada diverjan, comprobar qué tiendas explican cada señal. Contrastar disponibilidad, surtido, ventas y el potencial del mercado antes de invertir.',
      note:'La regla aplica pesos definidos para ordenar señales; no está calibrada con ventas absolutas, tamaño de mercado o rentabilidad. Los períodos comparados no son idénticos.'};
  }
  return null;
 }
 function explainCharts(){
  const hints={
- rankChart:['Cómo se lee','Las barras representan la participación del indicador seleccionado de cada marca. El color más claro corresponde a 2025 completo y el dorado a 2026 hasta septiembre. Compara las barras de una misma marca; no sumes participaciones de distintos canales.'],
- deltaChart:['Cómo se lee','Las barras muestran cuánto ha aumentado o disminuido la participación en puntos porcentuales. Ejemplo: de 9 % a 8 % es una caída de 1 punto porcentual, no una caída de 1 % de ventas.'],
+ rankChart:['Cómo se lee','Las barras reflejan el indicador seleccionado: cuota en valor, cuota en volumen, distribución numérica o distribución ponderada. Gris: 2025 completo; dorado: 2026 hasta septiembre. La distribución de distintas marcas puede solaparse y no debe sumarse.'],
+ deltaChart:['Cómo se lee','Las barras muestran cambios en puntos porcentuales del indicador seleccionado. Las variaciones de distribución numérica y ponderada son cambios de presencia, no cambios de ventas de la marca; las ventanas temporales tienen duraciones distintas.'],
  comparePlot:['Cómo se lee','Cada barra muestra qué parte del valor total de ventas de ron corresponde a una marca en el mercado elegido. Las barras no muestran ventas en dinero.'],
 
  marketPlot:['Cómo se lee','Compara la proporción del mercado de ron que representa Carúpano dentro de cada corte. Una barra más alta no significa necesariamente más dinero vendido, porque cada mercado tiene un tamaño diferente.'],

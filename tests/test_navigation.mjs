@@ -55,7 +55,7 @@ const program=[
  regional.replace(/^export /,''),
  advanced.replace(/^export /,''),
  app.replace(/^(?:import[^\n]*\n)+/,'').replace(/main\(\);\s*$/, ''),
- 'globalThis.__state=state; globalThis.__loaded=main();'
+ 'globalThis.__state=state; globalThis.__metricFunctions={insights,readerNarrative,distributionDiagnosis,render}; globalThis.__loaded=main();'
 ].join('\n');
 const context={document,window,fetch,console};
 vm.runInNewContext(program,context,{filename:'dashboard-navigation-smoke.js'});
@@ -87,4 +87,44 @@ window.location.hash='#formats';
 events.get('window:hashchange')();
 assert.equal(context.__state.page,'overview','Old formats links must redirect to executive overview');
 assert.equal(window.location.hash,'overview');
+
+const metrics=['value','volume','numeric_distribution','weighted_distribution'];
+let checked=0;
+for(const market of payload['data/metadata.json'].markets){
+ for(const metric of metrics){
+  context.__state.page='overview';
+  context.__state.market=market;
+  context.__state.metric=metric;
+  context.__metricFunctions.render();
+  const html=element('view').innerHTML;
+  const notes=context.__metricFunctions.insights(market,metric);
+  assert.equal(notes.length,3,market+' '+metric+': three metric-specific insights');
+  assert.ok(notes.every(n=>n.title&&n.body&&!/undefined|NaN/.test(n.title+n.body)),market+' '+metric+': valid insights');
+  assert.ok(html.includes(notes[0].title),'Selected metric must appear in insight title: '+market+' '+metric);
+  assert.ok(html.includes(notes[1].title),'Comparison headline must match selected metric: '+market+' '+metric);
+  assert.ok(html.includes('2025 completo')&&html.includes('2026 hasta septiembre'),'Both periods and metric table should render');
+  if(metric.endsWith('distribution')){
+   assert.ok(notes[1].body.includes('puede vender varias marcas'),'Distribution overlap must be explained');
+   assert.ok(!/juntas representan|reúnen el|participación conjunta/i.test(notes[1].title+' '+notes[1].body),'Must never sum brand distributions');
+   assert.ok(notes[2].body.includes('Distribución numérica:')&&notes[2].body.includes('ponderada:'),'Both distribution differences must be stated');
+   assert.ok(!html.includes('181,19 % del valor'),'Impossible combined distribution must never appear');
+  }else{
+   assert.ok(notes[1].title.includes(metric==='value'?'valor':'volumen'),'Competition concentration must use correct denominator');
+  }
+  checked++;
+ }
+}
+const num=context.__metricFunctions.insights('Total Venezuela1','numeric_distribution');
+const weighted=context.__metricFunctions.insights('Total Venezuela1','weighted_distribution');
+assert.ok(num[0].body.includes('10,68 %'),'National numeric distribution correctly sourced');
+assert.ok(weighted[0].body.includes('72,25 %'),'National weighted distribution correctly sourced');
+assert.notEqual(num[1].body,weighted[1].body,'Changing metric changes competitor analysis');
+assert.notEqual(num[2].action,weighted[2].action,'Changing distribution metric changes follow-up investigation');
+const liquor=context.__metricFunctions.distributionDiagnosis(payload['data/market-brand.json'].find(x=>x.market==='Total Licorerias1*'&&x.brand==='CARUPANO'));
+const capital=context.__metricFunctions.distributionDiagnosis(payload['data/market-brand.json'].find(x=>x.market==='Capital Tradicional1*'&&x.brand==='CARUPANO'));
+assert.equal(liquor.title,'Más tiendas, menor distribución ponderada');
+assert.equal(capital.title,'Menos tiendas, mayor distribución ponderada');
+assert.ok(!app.includes('Santa Teresa y Cacique reúnen el'),'Old metric-mismatched headline must be gone');
+console.log('Metric consistency: '+checked+' metric×market views, overlapping distributions and two opposing-signal cases validated.');
+
 console.log('Navigation passed: 13 sections, five advanced dashboards, regional routing and deep links.');
