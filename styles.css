@@ -269,3 +269,7 @@ body,button,select,input,table,.nav-button,.sidebar,.topbar,.kicker,.eyebrow,.su
 .portfolio-takeaway strong{color:#e9d1a3}
 .competition-ranking .plot.tall{height:445px}
 @media(max-width:1100px){.portfolio-clarity{grid-template-columns:1fr}}
+
+/* Las recomendaciones corresponden al indicador seleccionado y se muestran en la misma tarjeta. */
+.insight .insight-action{margin:12px 0 0;border-left:2px solid var(--gold);padding:9px 0 9px 12px;color:#c7cfc5;background:rgba(197,183,131,.055)}
+.insight .insight-action strong{color:#e2cf9b}
