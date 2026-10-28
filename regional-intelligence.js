@@ -53,7 +53,7 @@ export function buildRegionalView(rows, selectedMarket="Capital Autoservicio1*")
     const r=byMarket(m.id),c=byBrand(m.id,"CARUPANO"),p=r.findIndex(x=>x.brand==="CARUPANO")+1,top=r.filter(x=>x.brand!=="CARUPANO").slice(0,5);
     return {market:m,rank:p,car:c,top,leader:top[0]};
   });
-  const rowAction=(m)=>`<button type="button" class="region-jump" data-region-market="${escape(m.id)}" aria-label="Ver análisis de ${escape(m.label)}">Ver detalle</button>`;
+  const rowAction=(m)=>`<button type="button" class="region-jump inline-toggle" data-inline-market="${escape(m.id)}" aria-expanded="false" aria-label="Desplegar detalles de ${escape(m.label)} aquí">Ver detalle aquí ▾</button>`;
   const topRow=(r)=>{
     const v=val(r,"value"),d=change(r),rank=ranking.findIndex(x=>x.brand===r.brand)+1;
     return `<tr class="${r.brand==="CARUPANO"?"highlight":""}"><td><strong>${rank}. ${escape(r.brand)}</strong>${r.brand==="CARUPANO"?'<small class="region-carupano-label">Nuestra marca</small>':""}</td><td>${num(v)} %</td><td><span class="${classDiff(d)}">${difference(d)}</span></td><td>${num(val(r,"volume"))} %</td><td>${num(val(r,"numeric_distribution"))} %</td><td>${num(val(r,"weighted_distribution"))} %</td></tr>`;
