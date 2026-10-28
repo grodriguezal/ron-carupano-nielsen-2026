@@ -190,10 +190,55 @@ function advancedPage(){
  if(segment)segment.addEventListener('change',()=>{state.advancedSegment=segment.value;render()});
  const brand=$('advBrandSelect');
  if(brand)brand.addEventListener('change',()=>{state.advancedBrand=brand.value;render()});
- document.querySelectorAll('#view [data-mi-segment]').forEach(button=>button.addEventListener('click',()=>{
-   state.advancedSegment=button.dataset.miSegment;
-   navigate('premium');
-   window.scrollTo({top:0,behavior:'smooth'});
+ bindInlineDetails();
+}
+function safeInlineText(v){
+ return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function marketInlineHTML(market){
+ const all=state.rows.filter(x=>x.market===market&&key(x,'2026_ytd_sep','value')!=null).sort((a,b)=>key(b,'2026_ytd_sep','value')-key(a,'2026_ytd_sep','value'));
+ const car=all.find(x=>x.brand==='CARUPANO');
+ const rank=all.findIndex(x=>x.brand==='CARUPANO')+1;
+ const before=key(car,'2025_full','value'),now=key(car,'2026_ytd_sep','value');
+ const dn=key(car,'2026_ytd_sep','numeric_distribution'),dw=key(car,'2026_ytd_sep','weighted_distribution');
+ const rivals=all.filter(x=>x.brand!=='CARUPANO').slice(0,5);
+ const shift=before!=null&&now!=null?now-before:null;
+ const beforeNum=key(car,'2025_full','numeric_distribution');
+ const changeNum=beforeNum!=null&&dn!=null?dn-beforeNum:null;
+ const narrative=shift!=null&&changeNum!=null&&shift<-.005&&changeNum<-.005?'La participación y la presencia numérica son menores: revisar cobertura, disponibilidad y puntos de venta relevantes.':shift!=null&&changeNum!=null&&shift<-.005&&changeNum>.005?'Aunque hay más tiendas con presencia de la marca, su participación disminuye: investigar el peso de las tiendas, el surtido y la ejecución.':shift!=null&&shift>.005?'La marca aumenta su participación. Conviene contrastar qué cambió en la distribución y en la actividad comercial antes de atribuir causas.':'Las señales requieren revisar participación, distribución y competencia conjuntamente antes de tomar decisiones.';
+ const signed=(n)=>n==null?'Sin dato':`${n>0?'+':''}${fmt(n)} puntos porcentuales`;
+ return `<td colspan="6"><section class="inline-market-content" aria-label="Detalle de ${safeInlineText(readableMarket(market))}">
+ <div class="inline-market-head"><div><span class="inline-kicker">DETALLE DESPLEGADO EN ESTA TABLA</span><h3>${safeInlineText(readableMarket(market))}</h3><p>El análisis permanece aquí. Todos los porcentajes corresponden únicamente al mercado seleccionado.</p></div><strong class="inline-rank">Carúpano: puesto ${rank||'—'}</strong></div>
+ <div class="inline-market-stats"><div><small>Cuota en valor · 2025 completo</small><strong>${fmt(before)} %</strong></div><div><small>Cuota en valor · 2026 hasta septiembre</small><strong>${fmt(now)} %</strong></div><div><small>Tiendas con Carúpano</small><strong>${fmt(dn)} %</strong></div><div><small>Presencia ponderada</small><strong>${fmt(dw)} %</strong></div></div>
+ <div class="inline-market-grid"><div><h4>Cinco competidores con mayor participación</h4><table class="inline-mini-table"><thead><tr><th>Marca</th><th>Participación 2026</th><th>Cambio frente a 2025</th></tr></thead><tbody>${rivals.map((r,i)=>{const a=key(r,'2025_full','value'),b=key(r,'2026_ytd_sep','value');return `<tr><td>${i+1}. ${safeInlineText(r.brand)}</td><td>${fmt(b)} %</td><td>${signed(a!=null&&b!=null?b-a:null)}</td></tr>`}).join('')}</tbody></table></div>
+ <div class="inline-market-take"><h4>Cómo interpretar este resultado</h4><p><strong>Participación de Carúpano:</strong> ${signed(shift)} frente al año completo de 2025.</p><p><strong>Presencia en tiendas:</strong> ${signed(changeNum)} frente al mismo período.</p><p>${narrative}</p><small>Las ventanas de 2025 y 2026 tienen duraciones diferentes. No se pueden inferir ventas absolutas ni transferencias directas de clientes entre marcas.</small></div></div>
+ </section></td>`;
+}
+function segmentInlineHTML(segment){
+ const records=state.portfolio.filter(x=>x.market===state.market&&x.segment===segment&&x.size_ml==null&&key(x,'2026_ytd_sep','value')!=null);
+ const total=records.reduce((a,r)=>a+key(r,'2026_ytd_sep','value'),0);
+ const ranked=records.slice().sort((a,b)=>key(b,'2026_ytd_sep','value')-key(a,'2026_ytd_sep','value'));
+ const car=records.find(x=>x.brand==='CARUPANO');
+ const carShare=total>0&&car?key(car,'2026_ytd_sep','value')/total*100:null;
+ const table=ranked.filter(x=>x.brand!=='CARUPANO').slice(0,5);
+ return `<td colspan="7"><section class="inline-market-content" aria-label="Competidores dentro de ${safeInlineText(segment)}">
+ <div class="inline-market-head"><div><span class="inline-kicker">COMPARACIÓN EN ESTA MISMA TABLA</span><h3>${safeInlineText(segment)} · principales competidores</h3><p>Las cuotas de esta comparación se calculan dentro del segmento elegido, no sobre todas las ventas de ron.</p></div><strong class="inline-rank">Carúpano: ${fmt(carShare)} % del segmento</strong></div>
+ <div class="inline-market-grid"><div><h4>Marcas competidoras</h4><table class="inline-mini-table"><thead><tr><th>Marca</th><th>Cuota dentro del segmento</th></tr></thead><tbody>${table.map((r,i)=>`<tr><td>${i+1}. ${safeInlineText(r.brand)}</td><td>${total>0?fmt(key(r,'2026_ytd_sep','value')/total*100):'—'} %</td></tr>`).join('')}</tbody></table></div>
+ <div class="inline-market-take"><h4>Qué significa</h4><p>Carúpano representa ${fmt(carShare)} % del valor medido dentro de ${safeInlineText(segment)} en ${safeInlineText(readableMarket(state.market))}. El segmento completo aporta ${fmt(total)} % del valor del mercado de ron de esa zona.</p><p>Estos porcentajes tienen denominadores diferentes. Esta comparación no demuestra ventas absolutas ni crecimiento interanual homogéneo.</p></div></div>
+ </section></td>`;
+}
+function bindInlineDetails(){
+ document.querySelectorAll('#view [data-inline-market], #view [data-mi-segment]').forEach(button=>button.addEventListener('click',()=>{
+  const tr=button.closest('tr');
+  if(!tr)return;
+  const shouldOpen=button.getAttribute('aria-expanded')!=='true';
+  document.querySelectorAll('#view tr.inline-detail-row').forEach(el=>el.remove());
+  document.querySelectorAll('#view [data-inline-market], #view [data-mi-segment]').forEach(el=>{el.setAttribute('aria-expanded','false');el.textContent='Ver detalle aquí ▾';});
+  if(!shouldOpen)return;
+  const detail=button.dataset.miSegment?segmentInlineHTML(button.dataset.miSegment):marketInlineHTML(button.dataset.inlineMarket);
+  tr.insertAdjacentHTML('afterend',`<tr class="inline-detail-row">${detail}</tr>`);
+  button.setAttribute('aria-expanded','true');
+  button.textContent='Ocultar detalle ▴';
  }));
 }
 function regional(){
@@ -202,36 +247,13 @@ function regional(){
  result.charts.forEach(c=>chart(c.id,c.option));
  const selector=$('regionDetailSelect');
  if(selector)selector.addEventListener('change',()=>{state.regionalMarket=selector.value;render()});
- document.querySelectorAll('#view [data-region-market]').forEach(button=>button.addEventListener('click',()=>{
-  const id=button.dataset.regionMarket;
-  if(!id)return;
-  state.regionalMarket=id;
-  render();
-  window.scrollTo({top:0,behavior:'smooth'});
- }));
+ bindInlineDetails();
 }
 function strategic(){
  const report=buildStrategicView(state.rows,state.portfolio,state.market,state.competitor);
  $('view').innerHTML=report.html;
  for(const c of report.charts){chart(c.id,c.option);}
- document.querySelectorAll('#view [data-inspect-market]').forEach(button=>{
-   button.addEventListener('click',()=>{
-     const chosen=button.dataset.inspectMarket;
-     if(!chosen)return;
-     state.market=chosen;
-     $('marketSelect').value=chosen;
-     render();
-     window.scrollTo({top:0,behavior:'smooth'});
-   });
- });
- document.querySelectorAll('#view [data-regional-rivals]').forEach(button=>button.addEventListener('click',()=>{
-   const id=button.dataset.regionalRivals;
-   if(!id)return;
-   state.regionalMarket=id;
-   state.page='regional';
-   render();
-   window.scrollTo({top:0,behavior:'smooth'});
- }));
+ bindInlineDetails();
  const b=$('copyStrategyBrief');
  if(b)b.addEventListener('click',async ()=>{
   try{
