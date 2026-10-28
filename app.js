@@ -38,10 +38,71 @@ function portfolioReconciliationCard(sum,brandTotal){
 function panel(title,subtitle,plot,tag='',klass=''){return `<div class="panel ${klass}"><div class="panel-heading"><div><h2>${title}</h2><p>${subtitle}</p></div><span class="tag">${tag}</span></div><div class="plot ${plot==='tall'?'tall':''}" id="${plot}"></div></div>`}
 function table(headers,lines){return `<div class="table-wrap"><table class="table"><thead><tr>${headers.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${lines.join('')}</tbody></table></div>`}
 function brandTable(m,top=15){let rr=sorted(m,'value').slice(0,top);return table(['Marca','Participación en valor 2025','Participación en valor 2026 hasta septiembre','Diferencia entre períodos','Presencia ponderada en tiendas'],rr.map((x,i)=>`<tr class="${x.brand==='CARUPANO'?'highlight':''}"><td><strong>${i+1}. ${x.brand}</strong></td><td>${fmt(key(x,'2025_full','value'))}%</td><td>${fmt(key(x,'2026_ytd_sep','value'))}%</td><td class="${tone(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}">${signed(diff(key(x,'2025_full','value'),key(x,'2026_ytd_sep','value')))}</td><td>${fmt(key(x,'2026_ytd_sep','weighted_distribution'))}%</td></tr>`))}
-function insights(m=state.market){const c=row(m,'CARUPANO'), st=row(m,'SANTA TERESA'), ca=row(m,'CACIQUE');if(!c)return[];const v0=key(c,'2025_full','value'),v1=key(c,'2026_ytd_sep','value');const top=(key(st,'2026_ytd_sep','value')??0)+(key(ca,'2026_ytd_sep','value')??0);const prior=(key(st,'2025_full','value')??0)+(key(ca,'2025_full','value')??0);return [
- {tag:'01 / SITUACIÓN DE CARÚPANO',title:`Carúpano ${v1<v0?'pierde':'gana'} participación en valor`,body:`En ${readableMarket(m)}, de cada 100 unidades de valor vendido de ron, a Carúpano le corresponden ${fmt(v1)} en 2026 hasta septiembre, frente a ${fmt(v0)} en todo 2025. La diferencia es de ${signed(v1-v0)}. Los períodos no tienen la misma duración.`,type:'high'},
- {tag:'02 / POSICIÓN DE LAS MARCAS LÍDERES',title:`Santa Teresa y Cacique reúnen el ${fmt(top)}% del valor medido`,body:`En ${readableMarket(m)} representan juntas ${fmt(prior)}% en 2025 completo y ${fmt(top)}% en 2026 hasta septiembre. Esta concentración puede dificultar que el resto de marcas gane presencia; no demuestra por sí sola de dónde proceden los cambios de participación.`,type:'high'},
- {tag:'03 / LO QUE FALTA POR SABER',title:'Estar en tiendas no es lo mismo que vender más',body:'Una marca puede encontrarse en más establecimientos y, aun así, perder participación. Para conocer las causas hace falta revisar disponibilidad, inventarios, surtido, precios y actividad de competidores.',type:'medium'}];}
+
+function distributionDiagnosis(c){
+ const dn=diff(key(c,'2025_full','numeric_distribution'),key(c,'2026_ytd_sep','numeric_distribution'));
+ const dw=diff(key(c,'2025_full','weighted_distribution'),key(c,'2026_ytd_sep','weighted_distribution'));
+ const dv=diff(key(c,'2025_full','value'),key(c,'2026_ytd_sep','value'));
+ const sign=x=>x==null?0:x>.005?1:x<-.005?-1:0;
+ const n=sign(dn),w=sign(dw);
+ let title,meaning,action;
+ if(n>0&&w<0){
+  title='Más tiendas, menor distribución ponderada';
+  meaning='La proporción de establecimientos con la marca aumenta, pero las tiendas con presencia representan menos peso de la categoría. Puede cambiar la composición o relevancia comercial de las tiendas; no demuestra pérdida de locales importantes.';
+  action='Contrastar altas y bajas por cuenta, peso comercial, inventarios y surtido antes de intentar ampliar de nuevo la cobertura.';
+ }else if(n<0&&w>0){
+  title='Menos tiendas, mayor distribución ponderada';
+  meaning='Baja la cobertura numérica, pero aumenta el peso comercial de las tiendas con presencia. No demuestra que se estén abandonando deliberadamente tiendas pequeñas.';
+  action='Comprobar qué tiendas se perdieron y qué cuentas explican el cambio ponderado; contrastar ventas y cobertura objetivo.';
+ }else if(n<0&&w<0){
+  title='Retroceden ambas distribuciones';
+  meaning='Disminuyen el porcentaje de establecimientos con la marca y el peso comercial de sus tiendas. Conviene investigar cobertura sin asumir automáticamente faltantes.';
+  action='Revisar clientes perdidos, listados, inventarios y presencia en establecimientos de mayor peso comercial.';
+ }else if(n>0&&w>0){
+  title='Mejoran ambas distribuciones';
+  meaning='Aumentan la presencia en establecimientos y el peso comercial de esas tiendas. Esto no garantiza mayor cuota de ventas.';
+  action='Verificar qué cuentas explican la mejora y contrastar cuota, exhibición, rotación y surtido.';
+ }else if(n<0){
+  title='Baja la distribución numérica';
+  meaning='La proporción de tiendas disminuye, con cambios ponderados reducidos o no concluyentes.';
+  action='Identificar las tiendas perdidas y su peso comercial antes de ampliar cobertura.';
+ }else if(w<0){
+  title='Baja la distribución ponderada';
+  meaning='Las tiendas con presencia representan menor peso comercial, con cambios numéricos reducidos o no concluyentes.';
+  action='Revisar cuentas con presencia y su relevancia comercial antes de invertir en nuevas tiendas.';
+ }else{
+  title='Distribución estable o con señales favorables';
+  meaning='No coinciden dos señales claras de pérdida de distribución; aun así, la cobertura no demuestra ventas.';
+  action='Mantener seguimiento de disponibilidad, surtido y desempeño por cuenta.';
+ }
+ const share=dv==null?'No se dispone de cuota comparable.':dv<-.005?'La cuota en valor también retrocede; sus causas requieren comprobación.':dv>.005?'La cuota en valor mejora, pero no puede atribuirse automáticamente a la distribución.':'La cuota en valor permanece aproximadamente estable.';
+ return {title,meaning:meaning+' '+share,action,dn,dw,dv};
+}
+function buildMetricInsights(m=state.market,metric=state.metric){
+ const c=row(m,'CARUPANO'),st=row(m,'SANTA TERESA'),ca=row(m,'CACIQUE');if(!c)return[];
+ const old=key(c,'2025_full',metric),cur=key(c,'2026_ytd_sep',metric),d=diff(old,cur),where=readableMarket(m);
+ const label=metricLabel[metric],diag=distributionDiagnosis(c);
+ const show=n=>n==null?'sin dato':fmt(n)+' %';
+ const first={tag:'01 / INDICADOR SELECCIONADO',title:label+' de Carúpano',body:where+': '+show(old)+' en 2025 completo frente a '+show(cur)+' en 2026 hasta septiembre ('+signed(d)+'). Las ventanas temporales tienen duraciones distintas.'};
+ let second;
+ if(metric==='value'||metric==='volume'){
+  const a=key(st,'2026_ytd_sep',metric),b=key(ca,'2026_ytd_sep',metric),total=a==null||b==null?null:a+b;
+  second={tag:'02 / COMPETIDORES',title:'Cuota conjunta de Santa Teresa y Cacique en '+(metric==='value'?'valor':'volumen'),body:total==null?'No hay datos suficientes para sumar cuotas.':'Ambas representan '+show(total)+' del '+(metric==='value'?'valor':'volumen')+' de ron vendido en '+where+'. Solo sumamos cuotas con el mismo denominador, no distribuciones de tiendas.'};
+ }else{
+  second={tag:'02 / COMPARACIÓN DE PRESENCIA',title:'Las distribuciones de distintas marcas no se suman',body:'En '+where+': Carúpano '+show(cur)+', Santa Teresa '+show(key(st,'2026_ytd_sep',metric))+', Cacique '+show(key(ca,'2026_ytd_sep',metric))+'. Una tienda puede vender varias marcas: estas presencias no son partes excluyentes del mercado.'};
+ }
+ let third;
+ if(metric==='numeric_distribution'||metric==='weighted_distribution'){
+  third={tag:'03 / DISTRIBUCIÓN Y ACCIÓN',title:diag.title,body:'Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:diag.action};
+ }else if(metric==='volume'){
+  const val=diff(key(c,'2025_full','value'),key(c,'2026_ytd_sep','value'));
+  third={tag:'03 / QUÉ INVESTIGAR',title:'Volumen y valor no son la misma medida',body:'Cambio en volumen: '+signed(d)+'; en valor: '+signed(val)+'. Las diferencias pueden estar relacionadas con precios, promociones o mezcla de productos, sin probar ninguna causa. '+diag.title+'.',action:'Contrastar precios efectivos, mix, promociones y cambios en ambas distribuciones antes de concluir por qué cambia el volumen.'};
+ }else{
+  third={tag:'03 / QUÉ INVESTIGAR',title:'Contrastar cuota en valor y presencia en tiendas',body:'Cambio de cuota en valor: '+signed(d)+'. Distribución numérica: '+signed(diag.dn)+'; ponderada: '+signed(diag.dw)+'. '+diag.meaning,action:diag.action+' Contrastar también precios y surtido.'};
+ }
+ return [first,second,third];
+}
+function insights(m=state.market,metric=state.metric){return buildMetricInsights(m,metric)}
 function overview(){const c=row(state.market,'CARUPANO');if(!c){$('view').innerHTML='<div class="notice">Carúpano no tiene observaciones en este corte de mercado.</div>';return}const cm=(m)=>[key(c,'2025_full',m),key(c,'2026_ytd_sep',m)];let metric=state.metric;let [prev,cur]=cm(metric);const n=sorted().findIndex(x=>x.brand==='CARUPANO')+1;
  $('view').innerHTML=`<div class="cards">${card('Participación de Carúpano · '+metricLabel[metric],fmt(cur)+'%',diff(prev,cur))}${card('Lugar de Carúpano entre las marcas','#'+n,null,'ordenado según el indicador seleccionado')}${card('Peso comercial de tiendas con la marca',fmt(key(c,'2026_ytd_sep','weighted_distribution'))+'%',diff(...cm('weighted_distribution')))}${card('Participación en volumen',fmt(key(c,'2026_ytd_sep','volume'))+'%',diff(...cm('volume')))}</div><div class="grid2">${panel('¿Qué marcas tienen mayor participación?','Comparamos el año completo 2025 con 2026 acumulado hasta septiembre','rankChart','COMPETENCIA')}${panel('Marcas que aumentan o reducen su participación','Cambios medidos en puntos porcentuales, entre períodos distintos','deltaChart','DIFERENCIAS')}</div><div class="section-title">TRES IDEAS PARA ENTENDER LOS RESULTADOS</div><div class="grid2 equal"><div class="panel"><div class="insight-list">${insights().map(i=>`<div class="insight"><div class="flag">${i.tag}</div><h3>${i.title}</h3><p>${i.body}</p></div>`).join('')}</div></div><div class="panel"><div class="panel-heading"><div><h2>Orden de las marcas en este mercado</h2><p>${state.market.replaceAll('*','')} · Participación en valor</p></div></div>${brandTable(state.market,10)}</div></div>`;
  const winners=sorted(state.market,metric).slice(0,8).reverse();chart('rankChart',{tooltip:{trigger:'axis'},grid:{left:120,right:20,top:14,bottom:33},xAxis:{type:'value',...axis},yAxis:{type:'category',data:winners.map(x=>x.brand),...axis,axisLabel:{color:COLORS.muted,fontSize:10}},series:[{name:'2025 completo',type:'bar',data:winners.map(x=>key(x,'2025_full',metric)),itemStyle:{color:'#6b7470'},barMaxWidth:13},{name:'2026 hasta septiembre',type:'bar',data:winners.map(x=>key(x,'2026_ytd_sep',metric)),itemStyle:{color:COLORS.gold},barMaxWidth:13}],legend:{bottom:0,textStyle:{color:COLORS.muted}}});
