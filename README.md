@@ -24,6 +24,21 @@ python -m http.server 8000
 
 Abrir `http://localhost:8000`. La interfaz utiliza ECharts a través de CDN. GitHub Pages requiere habilitar Pages en los ajustes del repositorio y seleccionar la rama `main` y carpeta `/ (root)`.
 
+
+## Cómo utilizar el dashboard (no hace falta saber Nielsen)
+
+Al abrir la página se muestra un resumen de Ron Carúpano. Cada una de las siete secciones empieza por **qué muestran las cifras, qué significan y qué conviene investigar o hacer**. Debajo de cada gráfico hay una guía para interpretarlo. En la parte superior aparece **«¿No conoces Nielsen ni el sector? Empieza aquí»**, que explica términos con ejemplos.
+
+- **Resumen ejecutivo:** descubre la situación de la marca y los cambios de participación.
+- **Marcas competidoras:** compara Carúpano con cualquier otra marca medida.
+- **Canales y regiones:** explora cómo cambia la participación según dónde y cómo se vende.
+- **Presencia en tiendas:** compara número de tiendas e importancia comercial de esas tiendas.
+- **Productos y formatos:** analiza qué aporta cada segmento del portafolio al mercado.
+- **Oportunidades de mejora:** interpreta señales automáticas y los siguientes pasos de investigación.
+- **Escenarios 2027:** prueba metas hipotéticas, sin confundirlas con predicciones.
+
+**Regla editorial:** el relato se divide en dato observado, interpretación prudente y acción por investigar. No se presenta una correlación como prueba de causalidad. Los cambios entre porcentajes se escriben en palabras completas («puntos porcentuales») y se señala que 2025 y 2026 no son períodos de igual duración.
+
 ## Precauciones metodológicas
 
 - **2025 completo y 2026 YTD sep no son periodos comparables para YoY de ventas**. Mostrar diferencias de cuota (pp) con advertencia.
