@@ -106,7 +106,8 @@ for(const market of payload['data/metadata.json'].markets){
   if(metric.endsWith('distribution')){
    assert.ok(notes[1].body.includes('puede vender varias marcas'),'Distribution overlap must be explained');
    assert.ok(!/juntas representan|reúnen el|participación conjunta/i.test(notes[1].title+' '+notes[1].body),'Must never sum brand distributions');
-   assert.ok(notes[2].body.includes('Distribución numérica:')&&notes[2].body.includes('ponderada:'),'Both distribution differences must be stated');
+   assert.ok(notes[2].body.includes(metric==='numeric_distribution'?'distribución numérica pasa':'distribución ponderada pasa'),'Diagnosis must focus on the selected measure');
+   assert.ok(notes[2].action&&html.includes(notes[2].action),'Specific investigation advice should be visible inside the insight card');
    assert.ok(!html.includes('181,19 % del valor'),'Impossible combined distribution must never appear');
   }else{
    assert.ok(notes[1].title.includes(metric==='value'?'valor':'volumen'),'Competition concentration must use correct denominator');
@@ -118,8 +119,23 @@ const num=context.__metricFunctions.insights('Total Venezuela1','numeric_distrib
 const weighted=context.__metricFunctions.insights('Total Venezuela1','weighted_distribution');
 assert.ok(num[0].body.includes('10,68 %'),'National numeric distribution correctly sourced');
 assert.ok(weighted[0].body.includes('72,25 %'),'National weighted distribution correctly sourced');
+assert.notEqual(num[1].title,weighted[1].title,'Comparison must ask materially different questions');
 assert.notEqual(num[1].body,weighted[1].body,'Changing metric changes competitor analysis');
+assert.notEqual(num[2].title,weighted[2].title,'The primary diagnosis must focus on selected indicator');
+assert.notEqual(num[2].body,weighted[2].body,'The analysis body must not be recycled');
 assert.notEqual(num[2].action,weighted[2].action,'Changing distribution metric changes follow-up investigation');
+assert.ok(num[1].body.includes('21,81 %')&&num[1].body.includes('-11,12'),'Numeric comparison must use numeric distribution and leader gap');
+assert.ok(weighted[1].body.includes('95,91 %')&&weighted[1].body.includes('-23,66'),'Weighted comparison must use weighted distribution and leader gap');
+assert.ok(num[2].action.includes('listado de tiendas'),'Numeric follow-up must investigate store coverage');
+assert.ok(weighted[2].action.includes('peso de ventas de la categoría'),'Weighted follow-up must prioritize commercial weight');
+for(const market of payload['data/metadata.json'].markets){
+ const n=context.__metricFunctions.insights(market,'numeric_distribution');
+ const w=context.__metricFunctions.insights(market,'weighted_distribution');
+ assert.notEqual(n[1].title,w[1].title,market+': distinct coverage vs commercial-weight comparison');
+ assert.notEqual(n[2].title,w[2].title,market+': distinct distribution diagnosis');
+ assert.notEqual(n[2].action,w[2].action,market+': distinct operational recommendations');
+ assert.ok(n[1].body.includes('establecimientos')&&w[1].body.includes('categoría'),market+': semantically distinct interpretation');
+}
 const liquor=context.__metricFunctions.distributionDiagnosis(payload['data/market-brand.json'].find(x=>x.market==='Total Licorerias1*'&&x.brand==='CARUPANO'));
 const capital=context.__metricFunctions.distributionDiagnosis(payload['data/market-brand.json'].find(x=>x.market==='Capital Tradicional1*'&&x.brand==='CARUPANO'));
 assert.equal(liquor.title,'Más tiendas, menor distribución ponderada');

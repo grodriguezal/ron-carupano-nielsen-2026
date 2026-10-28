@@ -187,3 +187,6 @@ La información procede de NielsenIQ y el archivo incluye © 2026 Nielsen Consum
 ## QA
 
 Las cifras nacionales para 2026 YTD deben ser: Carúpano 8,1123%; Santa Teresa 59,1257%; Cacique 14,0290% en cuota de valor. Ver `tests/test_data.py`.
+## Diagnóstico por métrica en el resumen ejecutivo
+
+Al elegir **distribución numérica**, las conclusiones comparan el porcentaje de establecimientos con presencia de Carúpano frente al líder del mercado en valor y proponen una auditoría de altas/bajas, surtido y disponibilidad por tienda. Al elegir **distribución ponderada**, el diagnóstico compara el peso de la categoría representado por las tiendas con presencia de cada marca y prioriza cuentas relevantes, surtido e inventario. Las tres tarjetas cambian sus cifras y sus interpretaciones, y la tercera muestra también una acción concreta. Ninguna de estas medidas se suma entre marcas; las cuotas son independientes y pueden solaparse. Las pruebas validan las dos lecturas en los 21 mercados.
