@@ -203,6 +203,14 @@ function strategic(){
      window.scrollTo({top:0,behavior:'smooth'});
    });
  });
+ document.querySelectorAll('#view [data-regional-rivals]').forEach(button=>button.addEventListener('click',()=>{
+   const id=button.dataset.regionalRivals;
+   if(!id)return;
+   state.regionalMarket=id;
+   state.page='regional';
+   render();
+   window.scrollTo({top:0,behavior:'smooth'});
+ }));
  const b=$('copyStrategyBrief');
  if(b)b.addEventListener('click',async ()=>{
   try{
