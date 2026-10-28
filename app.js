@@ -1,6 +1,6 @@
-import {buildStrategicView} from './strategic-intelligence.js?v=20261028-market-v3';
-import {buildRegionalView} from './regional-intelligence.js?v=20261028-market-v3';
-import {buildAdvancedView} from './advanced-intelligence.js?v=20261028-market-v3';
+import {buildStrategicView} from './strategic-intelligence.js?v=20261028-inline-v4';
+import {buildRegionalView} from './regional-intelligence.js?v=20261028-inline-v4';
+import {buildAdvancedView} from './advanced-intelligence.js?v=20261028-inline-v4';
 const COLORS={gold:'#c5b783',white:'#ebe9e0',muted:'#919b96',grid:'#2b3230',red:'#e08d80',green:'#85b89c',blue:'#79989d'};
 const NATION='Total Venezuela1';
 const PAGES={
