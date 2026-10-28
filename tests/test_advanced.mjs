@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {buildAdvancedView} from '../advanced-intelligence.js';
 const read=p=>JSON.parse(readFileSync(new URL('../'+p,import.meta.url),'utf8'));
 const rows=read('data/market-brand.json'), portfolio=read('data/portfolio.json'), meta=read('data/metadata.json');
-const pages=['segments','premium','value','distributionMatrix','formats','movements'];
+const pages=['segments','premium','value','distributionMatrix','movements'];
 for(const market of meta.markets){
  for(const page of pages){
   const r=buildAdvancedView(rows,portfolio,page,market,'SUPER PREMIUM','CARUPANO');
@@ -29,14 +29,15 @@ assert.equal(premium.meta.regionalRows,8);
 assert.ok(Math.abs(premium.meta.carShare-14.6737759844)<0.000001);
 const value=buildAdvancedView(rows,portfolio,'value',nation);
 assert.ok(Math.abs(value.meta.carIndex-122.56080979)<.00001);
-assert.ok(value.html.includes('No equivale a un precio por botella'));
+assert.ok(value.html.includes('NielsenIQ proporciona participación en valor y participación en volumen'));
+assert.ok(value.html.includes('El índice NO viene calculado en NielsenIQ'));
+assert.ok(value.html.includes('8,1123 % ÷ 6,6190 % × 100'));
+assert.ok(value.html.includes('No equivale a un precio de venta'));
+
 const distribution=buildAdvancedView(rows,portfolio,'distributionMatrix',nation);
 assert.equal(distribution.meta.marketCount,21);
 assert.equal(distribution.meta.negativeBoth,12);
-const formats=buildAdvancedView(rows,portfolio,'formats',nation,'STANDARD');
-assert.ok(formats.meta.reconciliation<=.0005);
-assert.ok(Math.abs(formats.meta.change700-1.8554)<.00001);
-assert.ok(Math.abs(formats.meta.change750+2.7633)<.00001);
+assert.throws(()=>buildAdvancedView(rows,portfolio,'formats',nation,'STANDARD'),/Dashboard no reconocido/,'Retired formats dashboard must be unavailable');
 const movement=buildAdvancedView(rows,portfolio,'movements',nation);
 assert.equal(movement.meta.largestGainer,'SANTA TERESA');
 assert.ok(Math.abs(movement.meta.carDelta+0.9079)<.000001);
@@ -44,4 +45,4 @@ const alternate=buildAdvancedView(rows,portfolio,'premium','Andes+Occidente Auto
 assert.equal(alternate.meta.segment,'STANDARD');
 const competitor=buildAdvancedView(rows,portfolio,'movements',nation,'STANDARD','CACIQUE');
 assert.ok(competitor.html.includes('CACIQUE'));
-console.log('Advanced intelligence: all 126 page-market views and benchmark indicators validated.');
+console.log('Advanced intelligence: all 105 page-market views and benchmark indicators validated.');
