@@ -190,6 +190,11 @@ function advancedPage(){
  if(segment)segment.addEventListener('change',()=>{state.advancedSegment=segment.value;render()});
  const brand=$('advBrandSelect');
  if(brand)brand.addEventListener('change',()=>{state.advancedBrand=brand.value;render()});
+ document.querySelectorAll('#view [data-mi-segment]').forEach(button=>button.addEventListener('click',()=>{
+   state.advancedSegment=button.dataset.miSegment;
+   navigate('premium');
+   window.scrollTo({top:0,behavior:'smooth'});
+ }));
 }
 function regional(){
  const result=buildRegionalView(state.rows,state.regionalMarket);
