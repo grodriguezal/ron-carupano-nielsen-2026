@@ -1,7 +1,7 @@
 // Cloudflare Workers AI interpreta la intención; no recibe valores ni registros Nielsen.
 const ALLOW_ORIGINS=new Set(['https://grodriguezal.github.io','http://localhost:8000','http://127.0.0.1:8000']);
 const MODEL='@cf/meta/llama-3.1-8b-instruct-fp8-fast';
-const intents=['compare','summary','opportunities','segment','distribution','markets','ranking','glossary'];
+const intents=['compare','summary','opportunities','segment','distribution','markets','ranking','glossary','causes','limits'];
 function headers(origin){
  return {'Content-Type':'application/json; charset=utf-8',
    'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'POST, OPTIONS',
@@ -34,7 +34,7 @@ export default {
     'Eres un clasificador de preguntas comerciales en español para un dataset NielsenIQ de ron en Venezuela.',
     'Devuelve UNICAMENTE un objeto JSON válido: {"intent":"compare","market":"...","metric":"value","brand":"SANTA TERESA","segment":"SUPER PREMIUM"}.',
     'intents posibles: '+intents.join(', ')+'.',
-    'compare = comparar Carúpano vs otra marca en un corte; summary = resumen; opportunities = oportunidades/prioridades; segment = cuota dentro de segmento; distribution = numérica y ponderada juntas; markets = en qué regiones/cortes sube o baja; ranking = líderes/top marcas; glossary = definiciones.',
+    'compare = comparación de marca; summary = resumen; opportunities = prioridades; segment = cuota dentro de segmento; distribution = ambas distribuciones; markets = variaciones por mercado; ranking = líderes; glossary = conceptos; causes = por qué sucede algo; limits = ventas absolutas y variables no disponibles.',
     'metric debe ser uno de value, volume, numeric_distribution, weighted_distribution.',
     'market debe ser EXACTAMENTE uno de: '+JSON.stringify(markets)+'.',
     'brand debe ser EXACTAMENTE una marca distinta de CARUPANO de: '+JSON.stringify(brands)+'.',
