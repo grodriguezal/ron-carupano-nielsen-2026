@@ -13,7 +13,7 @@ const n = v => v == null || !Number.isFinite(Number(v)) ? 'sin dato' : Number(v)
 const pp = v => v == null || !Number.isFinite(v) ? 'sin dato' : (v > 0 ? '+' : '')+v.toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})+' pp';
 const val = (r, metric, period='2026_ytd_sep') => r?.[period]?.[metric] ?? null;
 const delta = (r, metric) => {const a=val(r,metric,'2025_full'),b=val(r,metric);return a==null||b==null?null:b-a;};
-const label = m => m.replace(/^T /,'').replace(/ Alimentos_Abs$/,'').replace(/1\*?$/,'').replace(/Autoservicio/,' · Autoservicio').replace(/Tradicional/,' · Tradicional').trim();
+const label = m => m.replace(/^T /,'').replace(/ Alimentos_Abs$/,'').replace(/1\*?$/,'').replace(/Autoservicio/,' · Autoservicio').replace(/Tradicional/,' · Tradicional').replace(/\s+/g,' ').trim();
 const aliases = {
   'caracas': 'T Caracas Alimentos_Abs', 'capital': 'T Capital Alimentos_Abs',
   'maracaibo': 'T Maracaibo Alimentos_Abs', 'valencia': 'T Valencia Alimentos_Abs',
@@ -61,13 +61,14 @@ export function parseQuestion(question, meta, previous={}){
   let segment=segments.find(x=>s.includes(clean(x)))||previous.segment||'SUPER PREMIUM';
   let metric=detectMetric(question,previous.metric||'value');
   let intent='compare';
-  if(/que significa|que es |explica(me)? (la |el )?(distribucion|participacion|indice)|diferencia entre numerica/.test(s))intent='glossary';
+  if(/que significa|que es |explica(me)? (la |el )?(distribucion|participacion|indice)|diferencia entre (distribucion )?(numerica|ponderada)|que diferencia hay entre|cual es la diferencia|en que se diferencian/.test(s))intent='glossary';
   else if(/resumen|sintesis|panorama|diagnostico general/.test(s))intent='summary';
   else if(/prioridad|oportunidad|donde (debemos|conviene) (actuar|mejorar)|acciones comerciales/.test(s))intent='opportunities';
   else if(/segmento|super premium|standard|otros ron/.test(s))intent='segment';
   else if(/distribucion.*(numerica.*ponderada|ponderada.*numerica)|ambas distribuciones/.test(s))intent='distribution';
   else if(/donde|cuales (son|fueron) (los|las)|mas (perd|gan|aument|baj|caid)|mayores cambios|por region|regiones/.test(s))intent='markets';
   else if(/lider|ranking|top ?[0-9]|principales marcas|quien (domina|encabeza)/.test(s))intent='ranking';
+  else if(/como estamos|como vamos|situacion|desempeno/.test(s) && !brands.some(x=>x!=='CARUPANO' && s.includes(clean(x))))intent='summary';
   return {intent,market,metric,brand,segment,limit:5};
 }
 export function validatePlan(input, meta, fallback){
@@ -119,12 +120,12 @@ function ranking(rows,p){
 function markets(rows,p){
   const all=[...new Set(rows.map(r=>r.market))];
   const scored=all.map(m=>({m,r:row(rows,m,'CARUPANO')})).filter(x=>x.r&&delta(x.r,p.metric)!=null).sort((a,b)=>delta(a.r,p.metric)-delta(b.r,p.metric));
-  const isGain=/ganar|subir/.test(clean(p.question||'')); if(isGain)scored.reverse();
-  return result('Cambios por corte de mercado · '+METRICS[p.metric],
+  const isGain=/gan|sub|aument|crec|mejor/.test(clean(p.question||'')); if(isGain)scored.reverse();
+  return {...result('Cambios por corte de mercado · '+METRICS[p.metric],
     [isGain?'Mayores incrementos observados:':'Mayores disminuciones observadas:',
     ...scored.slice(0,5).map((x,i)=>(i+1)+'. '+label(x.m)+': '+pp(delta(x.r,p.metric))+' ('+n(val(x.r,p.metric))+ ' actual).'),
     'Estos son cortes NielsenIQ, no necesariamente regiones independientes. Algunos se solapan; no es correcto sumar sus porcentajes ni interpretar esta lista como pérdidas absolutas de ventas.',
-    '2025 completo y 2026 acumulado a septiembre tienen distinta duración.'],p.market,'channels');
+    '2025 completo y 2026 acumulado a septiembre tienen distinta duración.'],p.market,'channels'),source:'Fuente: NielsenIQ · todos los cortes de mercado disponibles · '+PERIOD+' vs. '+PREVIOUS+'. Los cortes pueden solaparse.'};
 }
 function distribution(rows,p){
   const c=row(rows,p.market,'CARUPANO'),leader=rank(rows,p.market,'value')[0];
@@ -168,12 +169,12 @@ function opportunities(rows,p){
     return {m,c,d,w,num,score};
   }).filter(Boolean).sort((a,b)=>b.score-a.score || a.d-b.d);
   const selected=signals.filter(x=>x.score>0).slice(0,5);
-  return result('Señales comerciales para investigar',[
+  return {...result('Señales comerciales para investigar',[
     'Priorización exploratoria por coincidencia de menor participación en valor y retrocesos de distribución. No es una estimación de ROI, ventas perdidas ni causalidad.',
     ...selected.map((x,i)=>(i+1)+'. '+label(x.m)+': cuota '+pp(x.d)+', distribución numérica '+pp(x.num)+', ponderada '+pp(x.w)+'.'),
     'Próximo paso: contrastar estos indicios con inventarios, cuentas perdidas, surtido, disponibilidad, precios y ejecución comercial antes de asignar presupuesto.',
     'Los mercados incluyen canales y geografías solapados: no deben sumarse ni entenderse como una clasificación de oportunidades económicas absolutas.'
-  ],p.market,'distributionMatrix');
+  ],p.market,'distributionMatrix'),source:'Fuente: NielsenIQ · todos los cortes de mercado disponibles · '+PERIOD+' vs. '+PREVIOUS+'. Son señales exploratorias, no una oportunidad económica estimada.'};
 }
 function summary(rows,p){
   const m=p.market,c=row(rows,m,'CARUPANO');if(!c)return result('Sin datos','No se encontró la marca en el corte indicado.',m);
@@ -194,7 +195,7 @@ function glossary(p){
     volume:'Participación en volumen: porcentaje del volumen total vendido en la categoría correspondiente a la marca.',
     value:'Participación en valor: porcentaje del valor vendido de toda la categoría correspondiente a la marca.'
   };
-  return result('Cómo interpretar '+METRICS[p.metric],[texts[p.metric],'Distribución numérica y ponderada tienen denominadores conceptualmente distintos y nunca deben sumarse entre marcas o mercados.','Diferencia de porcentajes = puntos porcentuales (pp); no equivale a variación porcentual relativa.'],p.market,'overview');
+  return result('Conceptos NielsenIQ',[p.question && /numerica.*ponderada|ponderada.*numerica/i.test(clean(p.question)) ? texts.numeric_distribution+' '+texts.weighted_distribution : texts[p.metric], 'Distribución numérica y ponderada tienen denominadores conceptualmente distintos y nunca deben sumarse entre marcas o mercados.','Diferencia de porcentajes = puntos porcentuales (pp); no equivale a variación porcentual relativa.'],p.market,'overview');
 }
 export function answerQuestion(rows,portfolio,meta,question,provided,previous){
   const fallback=parseQuestion(question,meta,previous);
