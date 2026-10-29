@@ -71,6 +71,8 @@ export function parseQuestion(question, meta, previous={}){
   let metric=detectMetric(question,previous.metric||'value');
   let intent='compare';
   if(/que significa|que es |explica(me)? (la |el )?(distribucion|participacion|indice)|diferencia entre (distribucion )?(numerica|ponderada)|que diferencia hay entre|cual es la diferencia|en que se diferencian/.test(s))intent='glossary';
+  else if(/por que|causa|motivo|a que se debe/.test(s))intent='causes';
+  else if(/cuantas? botellas|facturac|ventas absolutas|ventas en dolares|ventas en bolivares|precio promedio|rentabilidad|margen de ganancia/.test(s))intent='limits';
   else if(/resumen|sintesis|panorama|diagnostico general/.test(s))intent='summary';
   else if(/prioridad|oportunidad|donde (debemos|conviene) (actuar|mejorar)|acciones comerciales/.test(s))intent='opportunities';
   else if(/segmento|super premium|standard|otros ron/.test(s))intent='segment';
@@ -82,7 +84,7 @@ export function parseQuestion(question, meta, previous={}){
 }
 export function validatePlan(input, meta, fallback){
   if(!input || typeof input!=='object' || Array.isArray(input))return fallback;
-  const validIntents=['compare','summary','opportunities','segment','distribution','markets','ranking','glossary'];
+  const validIntents=['compare','summary','opportunities','segment','distribution','markets','ranking','glossary','causes','limits'];
   return {
     intent:validIntents.includes(input.intent)?input.intent:fallback.intent,
     market:(meta.markets||[]).includes(input.market)?input.market:fallback.market,
@@ -197,6 +199,23 @@ function summary(rows,p){
     'Estos datos describen el mercado medido; no permiten deducir causas ni ventas absolutas.'
   ],m,'overview');
 }
+function causes(rows,p){
+  const c=row(rows,p.market,'CARUPANO');
+  if(!c)return result('No hay datos suficientes','Este corte no dispone de registros de Carúpano.',p.market);
+  return result('Qué sabemos y qué falta comprobar · '+label(p.market),[
+    'NielsenIQ registra estos cambios: participación en valor '+pp(delta(c,'value'))+', distribución numérica '+pp(delta(c,'numeric_distribution'))+', distribución ponderada '+pp(delta(c,'weighted_distribution'))+'.',
+    'Estos indicadores NO permiten determinar por qué ocurrió el cambio ni demostrar que la distribución lo causó.',
+    'Hipótesis a comprobar: agotados, altas y bajas de establecimientos, surtido, exhibición, precios, acciones de competencia y rotación por cuenta.',
+    'Contrastar los registros de los establecimientos y períodos comparables antes de extraer conclusiones causales.'
+  ],p.market,'distributionMatrix');
+}
+function limits(p){
+  return result('Lo que no permite calcular este dataset',[
+    'Los datos disponibles contienen participaciones de mercado en valor y volumen y distribuciones numérica y ponderada, no ventas absolutas de botellas, facturación, precios medios, márgenes ni rentabilidad.',
+    'No sería correcto convertir estos porcentajes en ventas absolutas ni estimar ingresos sin denominadores adicionales.',
+    'Sí puedes pedir cuotas, comparación con competidores, cambios en puntos porcentuales, segmentos y señales de distribución.'
+  ],p.market,'overview');
+}
 function glossary(p){
   const texts={
     weighted_distribution:'Distribución ponderada: porcentaje del peso de ventas de la categoría correspondiente a las tiendas donde está presente la marca. No es su participación en ventas.',
@@ -219,6 +238,8 @@ export function answerQuestion(rows,portfolio,meta,question,provided,previous){
     case 'markets':output=markets(rows,p);break;
     case 'ranking':output=ranking(rows,p);break;
     case 'glossary':output=glossary(p);break;
+    case 'causes':output=causes(rows,p);break;
+    case 'limits':output=limits(p);break;
     default:output=compare(rows,p);
   }
   return {...output,plan:p};
