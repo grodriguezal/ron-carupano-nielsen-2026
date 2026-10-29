@@ -40,7 +40,7 @@ export default {
     'brand debe ser EXACTAMENTE una marca distinta de CARUPANO de: '+JSON.stringify(brands)+'.',
     'segment debe ser SUPER PREMIUM, PREMIUM, STANDARD, OTROS RON u OTROS SEGMENTOS.',
     'Si habla de Caracas usa "T Caracas Alimentos_Abs"; si dice Capital usa "T Capital Alimentos_Abs". No inventes mercados.',
-    'Si no menciona región, usa el mercado previo o Total Venezuela1. Si no menciona métrica, usa la previa o value.',
+    'Usa el mercado y la métrica previos SOLO si la pregunta es un seguimiento explícito (por ejemplo, comienza con Y, Ahora o También). Si es una pregunta completa independiente, NO arrastres esos filtros: mercado Total Venezuela1 y métrica value por defecto. "Marcas líderes" sin otro indicador es un ranking de participación en valor.',
     'Si pregunta por el líder dentro de un segmento usa segment. No respondas con cifras.',
     'Contexto de pregunta anterior: '+JSON.stringify({market:previous.market||null,metric:previous.metric||null,brand:previous.brand||null,segment:previous.segment||null}),
     'Pregunta: '+question
