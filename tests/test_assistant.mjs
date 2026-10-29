@@ -64,4 +64,22 @@ for(const market of meta.markets){
   assert.ok(!JSON.stringify(r).includes('NaN') && !JSON.stringify(r).includes('undefined'));
  }
 }
+// Regresión: una pregunta independiente no debe heredar el indicador de una respuesta anterior.
+const priorWeighted={intent:'ranking',market:'T Caracas Alimentos_Abs',metric:'weighted_distribution',brand:'CACIQUE',segment:'SUPER PREMIUM'};
+const fresh=answerQuestion(rows,portfolio,meta,'¿Quiénes son las 5 marcas líderes de Caracas?',null,priorWeighted);
+assert.equal(fresh.plan.metric,'value');
+assert.equal(fresh.plan.market,'T Caracas Alimentos_Abs');
+assert.equal(fresh.plan.intent,'ranking');
+assert.ok(fresh.body.some(x=>x.includes('SANTA TERESA: 58,82 %')));
+assert.ok(fresh.body.some(x=>x.includes('BODEGA 1800: 4,98 %')));
+assert.ok(fresh.body.some(x=>x.includes('PAMPERO: 4,00 %')));
+const explicitWeighted=answerQuestion(rows,portfolio,meta,'¿Cuáles son las 5 marcas líderes de Caracas por distribución ponderada?',null,priorWeighted);
+assert.equal(explicitWeighted.plan.metric,'weighted_distribution');
+assert.ok(explicitWeighted.body.some(x=>x.includes('SANTA TERESA: 64,90 %')));
+const followUp=answerQuestion(rows,portfolio,meta,'¿Y en Caracas?',null,{intent:'ranking',market:'Total Venezuela1',metric:'weighted_distribution',brand:'CACIQUE',segment:'SUPER PREMIUM'});
+assert.equal(followUp.plan.metric,'weighted_distribution');
+assert.equal(followUp.plan.market,'T Caracas Alimentos_Abs');
+assert.equal(followUp.plan.intent,'ranking');
+const invalidAI=answerQuestion(rows,portfolio,meta,'¿Quiénes son las 5 marcas líderes de Caracas?',{intent:'ranking',market:'T Caracas Alimentos_Abs',metric:'weighted_distribution',brand:'CACIQUE',segment:'SUPER PREMIUM'},priorWeighted);
+assert.equal(invalidAI.plan.metric,'value','AI must not silently reinterpret generic leadership as weighted distribution');
 console.log('Nielsen assistant: queries, market separation, metrics, validation and source checks passed.');
