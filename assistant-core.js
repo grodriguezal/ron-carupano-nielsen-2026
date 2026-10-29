@@ -25,6 +25,15 @@ const aliases = {
 const segments=['SUPER PREMIUM','PREMIUM','STANDARD','OTROS RON','OTROS SEGMENTOS'];
 const pickMarket = (q, markets, preferred=NATION) => {
   const normalized=clean(q);
+  const auto=/autoservicio|supermercado/i.test(normalized),trad=/tradicional/i.test(normalized);
+  if(auto||trad){
+    for(const [key,name] of Object.entries(aliases).sort((a,b)=>b[0].length-a[0].length)){
+      if(!normalized.includes(key))continue;
+      const region=key==='caracas'||key==='capital'?'Capital':key==='andes'||key==='occidente'?'Andes+Occidente':key==='oriente'?'Oriente':key==='centro'||key==='centro occidente'?'Centro+Centro Occidente':null;
+      const candidate=markets.find(x=>region && x.startsWith(region+' ') && x.includes(auto?'Autoservicio':'Tradicional'));
+      if(candidate)return candidate;
+    }
+  }
   for(const market of [...markets].sort((a,b)=>b.length-a.length)) {
     if(normalized.includes(clean(market)) || normalized.includes(clean(label(market)))) return market;
   }
@@ -66,7 +75,7 @@ export function parseQuestion(question, meta, previous={}){
   else if(/prioridad|oportunidad|donde (debemos|conviene) (actuar|mejorar)|acciones comerciales/.test(s))intent='opportunities';
   else if(/segmento|super premium|standard|otros ron/.test(s))intent='segment';
   else if(/distribucion.*(numerica.*ponderada|ponderada.*numerica)|ambas distribuciones/.test(s))intent='distribution';
-  else if(/donde|cuales (son|fueron) (los|las)|mas (perd|gan|aument|baj|caid)|mayores cambios|por region|regiones/.test(s))intent='markets';
+  else if(/donde|cuales (son|fueron) (los|las)|mas (perd|gan|aument|baj|caid)|mayores cambios|por region|regiones|en que mercados|mercados|zonas|ciudades/.test(s))intent='markets';
   else if(/lider|ranking|top ?[0-9]|principales marcas|quien (domina|encabeza)/.test(s))intent='ranking';
   else if(/como estamos|como vamos|situacion|desempeno/.test(s) && !brands.some(x=>x!=='CARUPANO' && s.includes(clean(x))))intent='summary';
   return {intent,market,metric,brand,segment,limit:5};
