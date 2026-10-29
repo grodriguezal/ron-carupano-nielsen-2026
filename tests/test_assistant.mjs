@@ -50,4 +50,18 @@ for(const test of [compare,other,numeric,weighted,segment,opportunity,marketFall
  assert.ok(test.source.includes('NielsenIQ'));
  assert.ok(test.link.startsWith('#'));
 }
+const causal=answerQuestion(rows,portfolio,meta,'¿Por qué bajó la cuota de Carúpano en Caracas?');
+assert.equal(causal.plan.intent,'causes');
+assert.ok(causal.body.some(x=>x.includes('NO permiten determinar por qué')));
+const noAbsolute=answerQuestion(rows,portfolio,meta,'¿Cuántas botellas vendimos en Venezuela?');
+assert.equal(noAbsolute.plan.intent,'limits');
+assert.ok(noAbsolute.body.some(x=>x.includes('no ventas absolutas')));
+for(const market of meta.markets){
+ for(const metric of meta.metrics){
+  const r=answerQuestion(rows,portfolio,meta,'Compara Carúpano con Santa Teresa',{intent:'compare',market,metric,brand:'SANTA TERESA',segment:'SUPER PREMIUM'});
+  assert.equal(r.plan.market,market);
+  assert.equal(r.plan.metric,metric);
+  assert.ok(!JSON.stringify(r).includes('NaN') && !JSON.stringify(r).includes('undefined'));
+ }
+}
 console.log('Nielsen assistant: queries, market separation, metrics, validation and source checks passed.');
