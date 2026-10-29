@@ -190,3 +190,24 @@ Las cifras nacionales para 2026 YTD deben ser: Carúpano 8,1123%; Santa Teresa 5
 ## Diagnóstico por métrica en el resumen ejecutivo
 
 Al elegir **distribución numérica**, las conclusiones comparan el porcentaje de establecimientos con presencia de Carúpano frente al líder del mercado en valor y proponen una auditoría de altas/bajas, surtido y disponibilidad por tienda. Al elegir **distribución ponderada**, el diagnóstico compara el peso de la categoría representado por las tiendas con presencia de cada marca y prioriza cuentas relevantes, surtido e inventario. Las tres tarjetas cambian sus cifras y sus interpretaciones, y la tercera muestra también una acción concreta. Ninguna de estas medidas se suma entre marcas; las cuotas son independientes y pueden solaparse. Las pruebas validan las dos lecturas en los 21 mercados.
+
+
+## Preguntar a Nielsen · asistente gratuito (octubre 2026)
+
+En la barra superior aparece **✦ Preguntar a Nielsen**. El modo local NO requiere cuenta ni API. Calcula todas las cifras en el navegador a partir de los JSON ya publicados: comparación de marcas, rankings, cuotas dentro de segmentos, dos distribuciones, cambios por corte y oportunidades descriptivas. Presenta fuentes y enlaces a gráficos. Los datos numéricos de Nielsen no se envían al modelo de IA.
+
+### Activar la interpretación de lenguaje natural con Cloudflare Free
+
+**Estado:** interfaz y motor local integrados en GitHub Pages; Cloudflare preparado, pero la IA requiere que el propietario despliegue el Worker en su cuenta Cloudflare gratuita y configure su URL. Nunca publicar tokens.
+
+1. Crear cuenta gratuita en https://dash.cloudflare.com/ (Workers & Pages).
+2. Clonar el repositorio y ejecutar `npx wrangler login` y `npx wrangler deploy` desde la raíz.
+3. Cloudflare proporcionará una URL HTTPS real con formato `https://carupano-nielsen-assistant.<tu-subdominio>.workers.dev`.
+4. Insertar esa URL en `assistant-config.js` en la constante `ASSISTANT_WORKER_URL` y publicar el cambio en `main`.
+5. Mantener la cuenta en Workers Free y vigilar la cuota de Workers AI. Al agotarla el panel vuelve automáticamente al modo local sin coste. No habilitar Workers Paid para evitar facturas.
+
+El modelo solo recibe la pregunta, nombres de marcas/mercados y contexto previo, NUNCA valores, métricas por fila ni el JSON Nielsen. Verificar con NielsenIQ las condiciones de licencia de los datos públicos y los metadatos compartidos.
+
+**Importante:** CORS restringe navegadores, pero no autentica usuarios. Antes de dar acceso público al Worker, añadir una protección real de autenticación y limitación de tasa mediante Cloudflare. El modo local no ofrece la misma flexibilidad de lenguaje que un LLM y puede interpretar una pregunta ambigua de forma parcial. Siempre comprobar indicador, mercado y período en la respuesta.
+
+`npm test` ejecuta las pruebas del asistente junto a las pruebas del dashboard.
