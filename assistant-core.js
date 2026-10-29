@@ -64,12 +64,15 @@ const detectMetric = (q, previous='value') => {
 export function parseQuestion(question, meta, previous={}){
   const s=clean(question).replace(/[¿?¡!]/g,'');
   const markets=meta.markets||[], brands=meta.brands||[];
-  const market=pickMarket(question,markets,previous.market||NATION);
-  let brand=brands.filter(x=>x!=='CARUPANO' && s.includes(clean(x))).sort((a,b)=>b.length-a.length)[0] || previous.brand || 'SANTA TERESA';
+  // Una pregunta completa es independiente: solo heredar contexto cuando es un seguimiento explícito.
+  // Así, "¿Quiénes son las 5 marcas líderes de Caracas?" no reutiliza distribución ponderada.
+  const followUp=/^(y\b|ahora\b|tambien\b|lo mismo\b|que tal\b|en ese caso\b)/.test(s);
+  const market=pickMarket(question,markets,followUp?(previous.market||NATION):NATION);
+  let brand=brands.filter(x=>x!=='CARUPANO' && s.includes(clean(x))).sort((a,b)=>b.length-a.length)[0] || (followUp?previous.brand:null) || 'SANTA TERESA';
   if(!brands.includes(brand))brand='SANTA TERESA';
-  let segment=segments.find(x=>s.includes(clean(x)))||previous.segment||'SUPER PREMIUM';
-  let metric=detectMetric(question,previous.metric||'value');
-  let intent='compare';
+  let segment=segments.find(x=>s.includes(clean(x)))||(followUp?previous.segment:null)||'SUPER PREMIUM';
+  let metric=detectMetric(question,followUp?(previous.metric||'value'):'value');
+  let intent=followUp?(previous.intent||'compare'):'compare';
   if(/que significa|que es |explica(me)? (la |el )?(distribucion|participacion|indice)|diferencia entre (distribucion )?(numerica|ponderada)|que diferencia hay entre|cual es la diferencia|en que se diferencian/.test(s))intent='glossary';
   else if(/por que|causa|motivo|a que se debe/.test(s))intent='causes';
   else if(/cuantas? botellas|facturac|ventas absolutas|ventas en dolares|ventas en bolivares|precio promedio|rentabilidad|margen de ganancia/.test(s))intent='limits';
@@ -77,18 +80,21 @@ export function parseQuestion(question, meta, previous={}){
   else if(/prioridad|oportunidad|donde (debemos|conviene) (actuar|mejorar)|acciones comerciales/.test(s))intent='opportunities';
   else if(/segmento|super premium|standard|otros ron/.test(s))intent='segment';
   else if(/distribucion.*(numerica.*ponderada|ponderada.*numerica)|ambas distribuciones/.test(s))intent='distribution';
-  else if(/donde|cuales (son|fueron) (los|las)|mas (perd|gan|aument|baj|caid)|mayores cambios|por region|regiones|en que mercados|mercados|zonas|ciudades/.test(s))intent='markets';
   else if(/lider|ranking|top ?[0-9]|principales marcas|quien (domina|encabeza)/.test(s))intent='ranking';
+  else if(/donde|cuales (son|fueron) (los|las)|mas (perd|gan|aument|baj|caid)|mayores cambios|por region|regiones|en que mercados|mercados|zonas|ciudades/.test(s))intent='markets';
   else if(/como estamos|como vamos|situacion|desempeno/.test(s) && !brands.some(x=>x!=='CARUPANO' && s.includes(clean(x))))intent='summary';
   return {intent,market,metric,brand,segment,limit:5};
 }
-export function validatePlan(input, meta, fallback){
+export function validatePlan(input, meta, fallback, question=''){
   if(!input || typeof input!=='object' || Array.isArray(input))return fallback;
   const validIntents=['compare','summary','opportunities','segment','distribution','markets','ranking','glossary','causes','limits'];
   return {
     intent:validIntents.includes(input.intent)?input.intent:fallback.intent,
     market:(meta.markets||[]).includes(input.market)?input.market:fallback.market,
-    metric:METRICS[input.metric]?input.metric:fallback.metric,
+    // No permitir que una IA arrastre silenciosamente una métrica de una pregunta anterior
+    // en rankings genéricos: "líderes" significa participación en valor por defecto.
+    metric:fallback.intent==='ranking' && !/ponderad|numerica|volumen|valor|cuota|participacion|ventas|market share|cobertura|tiendas/.test(clean(question))
+      ? fallback.metric : (METRICS[input.metric]?input.metric:fallback.metric),
     brand:(meta.brands||[]).includes(input.brand)&&input.brand!=='CARUPANO'?input.brand:fallback.brand,
     segment:segments.includes(input.segment)?input.segment:fallback.segment,
     limit:5
@@ -227,7 +233,7 @@ function glossary(p){
 }
 export function answerQuestion(rows,portfolio,meta,question,provided,previous){
   const fallback=parseQuestion(question,meta,previous);
-  const p=validatePlan(provided,meta,fallback);
+  const p=validatePlan(provided,meta,fallback,question);
   p.question=question;
   let output;
   switch(p.intent){
