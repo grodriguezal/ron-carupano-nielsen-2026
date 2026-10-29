@@ -1,4 +1,4 @@
-import {answerQuestion,parseQuestion} from './assistant-core.js?v=20261029-v1';
+import {answerQuestion,parseQuestion} from './assistant-core.js?v=20261029-v2';
 import {ASSISTANT_WORKER_URL} from './assistant-config.js?v=20261029-v1';
 
 const samples=[
